@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from apothecaria.api import inventory as inventory_api
+from apothecaria.api import recipes as recipes_api
 from apothecaria.config import settings
 from apothecaria.db.seed import seed_database
 from apothecaria.db.session import engine, init_db
@@ -28,6 +30,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(inventory_api.router)
+app.include_router(recipes_api.router)
 
 
 @app.get("/api/health")
