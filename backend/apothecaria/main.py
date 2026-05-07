@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from apothecaria.api import customers as customers_api
 from apothecaria.api import inventory as inventory_api
 from apothecaria.api import recipes as recipes_api
 from apothecaria.config import settings
@@ -33,6 +34,7 @@ app.add_middleware(
 
 app.include_router(inventory_api.router)
 app.include_router(recipes_api.router)
+app.include_router(customers_api.router)
 
 
 @app.get("/api/health")
