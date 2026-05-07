@@ -1,4 +1,4 @@
-# Apothecaria — workshop starter (backend)
+# Apothecaria — workshop starter
 
 A cozy alchemist's apothecary. The starter you clone before the GitHub Copilot CLI workshop.
 
@@ -6,18 +6,20 @@ A cozy alchemist's apothecary. The starter you clone before the GitHub Copilot C
 
 - Python 3.12 (`pyenv install 3.12` if needed)
 - [`uv`](https://docs.astral.sh/uv/) — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Node 20+
 
 ## Quickstart
 
 ```bash
 git clone <this-repo>
 cd <repo>
-uv sync
-make seed       # creates apothecaria.sqlite, loads ingredients/recipes/customers
-make dev        # uvicorn on http://localhost:8000
+uv sync                # install python deps
+make install           # install frontend deps (npm)
+make seed              # creates apothecaria.sqlite
+make dev               # backend on :8000, frontend on :5173
 ```
 
-Open <http://localhost:8000/api/health> — should return `{"status": "ok"}`.
+Open <http://localhost:5173> for the game, or <http://localhost:8000/api/health> for a backend health check.
 
 ## Endpoints (Phase A)
 
@@ -58,9 +60,13 @@ files at load time and produce friendly errors for typos.
 
 | Target | What |
 |---|---|
-| `make dev` | Run uvicorn with reload |
-| `make test` | Run pytest |
-| `make lint` | `ruff check` |
+| `make dev` | Run backend + frontend together |
+| `make backend-dev` | Backend only |
+| `make frontend-dev` | Frontend only |
+| `make install` | `npm install` for the frontend |
+| `make build` | TypeScript + vite production build |
+| `make test` | Run pytest (backend) |
+| `make lint` | `ruff check` + `tsc --noEmit` |
 | `make format` | `ruff format` |
 | `make type` | `mypy` |
 | `make seed` | Upsert JSON content into SQLite |
