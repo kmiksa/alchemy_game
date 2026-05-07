@@ -1,5 +1,5 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
@@ -57,7 +57,7 @@ class BrewResult(BaseModel):
     description: str
 
 
-class Outcome(str, Enum):
+class Outcome(StrEnum):
     DELIGHTED = "delighted"
     NEUTRAL = "neutral"
     DISAPPOINTED = "disappointed"
