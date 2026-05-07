@@ -11,10 +11,10 @@ export function createDoor(scene: THREE.Scene): Door {
   const group = new THREE.Group();
 
   const wall = new THREE.Mesh(
-    new THREE.PlaneGeometry(20, 8),
-    new THREE.MeshStandardMaterial({ color: "#d8c8a8", roughness: 0.95 }),
+    new THREE.PlaneGeometry(80, 20),
+    new THREE.MeshStandardMaterial({ color: "#e8d8b0", roughness: 0.95 }),
   );
-  wall.position.set(0, 4, -3);
+  wall.position.set(0, 6, -3);
   group.add(wall);
 
   const frameMat = new THREE.MeshStandardMaterial({ color: "#3a2a1a", roughness: 0.85 });

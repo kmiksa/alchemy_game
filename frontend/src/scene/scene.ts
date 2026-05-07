@@ -25,24 +25,24 @@ export function initScene(canvas: HTMLCanvasElement): Scene {
     0.1,
     100,
   );
-  camera.position.set(4, 4, 8);
-  camera.lookAt(0, 1.5, 0);
+  camera.position.set(0, 2.5, 10);
+  camera.lookAt(0, 1.8, 0);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
 
-  const key = new THREE.DirectionalLight("#e6b85c", 1.4);
-  key.position.set(5, 8, 5);
+  const key = new THREE.DirectionalLight("#fff4d6", 2.0);
+  key.position.set(2, 8, 6);
   three.add(key);
-  const fill = new THREE.DirectionalLight("#5a7a9a", 0.4);
-  fill.position.set(-5, 4, -2);
+  const fill = new THREE.DirectionalLight("#7a9ac0", 0.6);
+  fill.position.set(-5, 4, 4);
   three.add(fill);
-  three.add(new THREE.AmbientLight("#ffffff", 0.3));
+  three.add(new THREE.AmbientLight("#ffffff", 0.7));
 
   const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(40, 40),
-    new THREE.MeshStandardMaterial({ color: "#5a3a22", roughness: 0.95 }),
+    new THREE.PlaneGeometry(80, 80),
+    new THREE.MeshStandardMaterial({ color: "#7a5238", roughness: 0.95 }),
   );
   floor.rotation.x = -Math.PI / 2;
   three.add(floor);
