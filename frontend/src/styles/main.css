@@ -1,9 +1,17 @@
 :root {
   --parchment: #f3e9d0;
+  --parchment-dark: #e8dcb8;
   --ink: #3a2a1a;
   --candle-gold: #e6b85c;
   --moonlight: #5a7a9a;
 }
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body {
   margin: 0;
@@ -11,12 +19,203 @@ body {
   background: var(--parchment);
   color: var(--ink);
   font-family: "EB Garamond", Georgia, serif;
+  font-size: 16px;
+  overflow: hidden;
 }
+
 #scene {
   display: block;
   width: 100vw;
   height: 100vh;
 }
+
 .overlay {
   position: fixed;
+  user-select: none;
+}
+
+.card {
+  background: var(--parchment);
+  border: 1px solid var(--candle-gold);
+  box-shadow: 0 8px 24px rgba(58, 42, 26, 0.25);
+  padding: 18px 20px;
+  border-radius: 6px;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 16px;
+  padding: 8px 16px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: filter 120ms ease;
+}
+.btn.primary {
+  background: var(--candle-gold);
+}
+.btn:hover {
+  filter: brightness(0.95);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#overlay-customer-dialog {
+  top: 24px;
+  right: 24px;
+  max-width: 360px;
+  z-index: 10;
+}
+.customer-card h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  margin: 0 0 4px;
+  font-size: 28px;
+}
+.customer-card .persona {
+  font-style: italic;
+  color: var(--moonlight);
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+.customer-card .narrative {
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+#overlay-grimoire-panel {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 520px;
+  width: 80vw;
+  z-index: 20;
+}
+.grimoire-card {
+  max-height: 70vh;
+  overflow: auto;
+}
+.grimoire-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.grimoire-card h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  margin: 0;
+  font-size: 32px;
+}
+.recipe-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.recipe-list li {
+  padding: 12px 0;
+  border-top: 1px solid rgba(58, 42, 26, 0.2);
+}
+.recipe-list h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  margin: 0 0 4px;
+}
+.recipe-list .lore {
+  font-style: italic;
+  margin: 4px 0;
+}
+.recipe-list .ings {
+  margin: 4px 0;
+  color: var(--moonlight);
+}
+.recipe-list .cat {
+  margin: 4px 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#overlay-brew-result {
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 420px;
+  z-index: 30;
+  animation: toast-in 220ms ease-out;
+}
+.toast h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  margin: 0 0 6px;
+  text-transform: capitalize;
+  font-size: 22px;
+}
+.toast p {
+  margin: 4px 0;
+}
+.toast .meta {
+  color: var(--moonlight);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+#overlay-inventory-bar {
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  z-index: 5;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 20px;
+}
+.bar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bar-section.flex-grow {
+  flex: 1;
+}
+.bar-section.actions {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.bar .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--moonlight);
+}
+.bar .reputation {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 26px;
+}
+.bar .contents {
+  font-size: 16px;
+}
+
+#overlay-toast {
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 360px;
+  z-index: 40;
+}
+.toast-error {
+  border-color: #a44 !important;
 }
