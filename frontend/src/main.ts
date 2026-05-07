@@ -1,3 +1,5 @@
-import { client } from "./api/client";
+import { initScene } from "./scene/scene";
+import "./styles/main.css";
 
-console.log("apothecaria booting", client);
+const canvas = document.getElementById("scene") as HTMLCanvasElement;
+initScene(canvas);
