@@ -59,6 +59,12 @@ export function initScene(canvas: HTMLCanvasElement): Scene {
   requestAnimationFrame(loop);
 
   updates.push((dt) => tickTweens(dt));
+  updates.push((dt) => {
+    three.traverse((obj) => {
+      const fn = (obj.userData as { update?: (dt: number) => void }).update;
+      if (fn) fn(dt);
+    });
+  });
 
   window.addEventListener("resize", () => {
     const a = window.innerWidth / window.innerHeight;
