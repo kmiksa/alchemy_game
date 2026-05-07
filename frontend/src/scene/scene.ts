@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+import { tickTweens } from "./animations";
+
 export type Scene = {
   three: THREE.Scene;
   camera: THREE.OrthographicCamera;
@@ -55,6 +57,8 @@ export function initScene(canvas: HTMLCanvasElement): Scene {
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
+
+  updates.push((dt) => tickTweens(dt));
 
   window.addEventListener("resize", () => {
     const a = window.innerWidth / window.innerHeight;
