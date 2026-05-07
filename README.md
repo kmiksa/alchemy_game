@@ -72,9 +72,28 @@ files at load time and produce friendly errors for typos.
 | `make seed` | Upsert JSON content into SQLite |
 | `make db-reset` | Delete the sqlite file and re-seed |
 
+## Frontend
+
+- Vite + TypeScript + Three.js, all procedural geometry (no asset files).
+- Vanilla DOM overlays for the four panels (customer dialog, grimoire, brew result, inventory bar).
+- `make dev` starts both processes; backend is `[api]`-prefixed, frontend `[web]`-prefixed.
+- `make build` produces a static bundle in `frontend/dist/`.
+- `make install` runs `npm install` inside `frontend/`. Run it once after cloning.
+
+### Adding a new ingredient
+
+The frontend has no asset files. Adding an ingredient is purely a backend edit:
+
+1. Edit `backend/apothecaria/content/ingredients.json`.
+2. Run `make seed` (upsert).
+3. Refresh the browser. A new jar appears on the shelf, color derived from the slug.
+
+The M1 workshop module wraps this flow in a `/new-ingredient` skill.
+
 ## What's *not* here yet
 
-This is **Phase A** of the workshop project. Phases B–D add: Three.js frontend, the
-in-game agents (M4), the Inventory MCP server (M2), and the in-repo `WORKSHOP.md`
-curriculum guide. The empty `backend/apothecaria/{agents,mcp}/` packages mark where
-M2/M4 will live (their `__init__.py` files carry intent docstrings).
+Phases A and B are complete (backend + frontend). Workshop modules M1–M4 are intentionally
+left for students to build during the day: the `/new-ingredient` skill (M1), the Inventory
+MCP server (M2), the plugin installs (M3), and the pydantic-ai customer agents (M4). Phase C
+adds the in-repo `WORKSHOP.md` curriculum guide. The empty `backend/apothecaria/{agents,mcp}/`
+packages mark where M2/M4 will live (their `__init__.py` files carry intent docstrings).
