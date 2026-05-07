@@ -63,6 +63,23 @@ async function boot(): Promise<void> {
 }
 
 function enableJarPicking(): void {
+  const tooltip = document.getElementById("overlay-tooltip")!;
+
+  function pickJar(event: MouseEvent): Jar | null {
+    const rect = canvas.getBoundingClientRect();
+    scene.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    scene.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    scene.raycaster.setFromCamera(scene.pointer, scene.camera);
+    const jarMeshes = shelfJars.map((j) => j.mesh);
+    const hits = scene.raycaster.intersectObjects(jarMeshes, true);
+    if (hits.length === 0) return null;
+    return (
+      shelfJars.find(
+        (j) => hits[0].object === j.mesh.children[0] || hits[0].object.parent === j.mesh,
+      ) ?? null
+    );
+  }
+
   canvas.addEventListener("click", (event) => {
     const rect = canvas.getBoundingClientRect();
     scene.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -75,15 +92,27 @@ function enableJarPicking(): void {
       return;
     }
 
-    const jarMeshes = shelfJars.map((j) => j.mesh);
-    const jarHits = scene.raycaster.intersectObjects(jarMeshes, true);
-    if (jarHits.length > 0) {
-      const jar = shelfJars.find(
-        (j) =>
-          jarHits[0].object === j.mesh.children[0] || jarHits[0].object.parent === j.mesh,
-      );
-      if (jar) addJarToCauldron(jar);
+    const jar = pickJar(event);
+    if (jar) addJarToCauldron(jar);
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    const jar = pickJar(event);
+    if (jar) {
+      tooltip.textContent = jar.ingredient.name;
+      tooltip.hidden = false;
+      tooltip.style.left = `${event.clientX + 12}px`;
+      tooltip.style.top = `${event.clientY + 12}px`;
+      canvas.style.cursor = "pointer";
+    } else {
+      tooltip.hidden = true;
+      canvas.style.cursor = "default";
     }
+  });
+
+  canvas.addEventListener("pointerleave", () => {
+    tooltip.hidden = true;
+    canvas.style.cursor = "default";
   });
 }
 
@@ -157,13 +186,13 @@ function wireOverlays(): void {
       session.clearCauldron();
       cauldron.resetColor();
       customerDialog.hide();
-      door.hideSilhouette();
+      door.hideCustomer();
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         showToast("That customer has left the shop");
         session.setCurrentCustomer(null);
         customerDialog.hide();
-        door.hideSilhouette();
+        door.hideCustomer();
       } else {
         showToast(errorText(err), "error");
       }
@@ -189,7 +218,7 @@ function connectWs(): void {
       if (!session.get().currentCustomer) {
         session.setCurrentCustomer(c);
         customerDialog.show(c);
-        door.showSilhouette();
+        door.showCustomer();
       }
     }
   });

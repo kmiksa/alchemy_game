@@ -219,3 +219,15 @@ body {
 .toast-error {
   border-color: #a44 !important;
 }
+
+#overlay-tooltip {
+  pointer-events: none;
+  z-index: 50;
+  background: var(--ink);
+  color: var(--parchment);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
