@@ -1,3 +1,74 @@
-# Apothecaria
+# Apothecaria — workshop starter (backend)
 
-Workshop starter — see Task 20 of the implementation plan for the full README.
+A cozy alchemist's apothecary. The starter you clone before the GitHub Copilot CLI workshop.
+
+## Prerequisites
+
+- Python 3.12 (`pyenv install 3.12` if needed)
+- [`uv`](https://docs.astral.sh/uv/) — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+## Quickstart
+
+```bash
+git clone <this-repo>
+cd <repo>
+uv sync
+make seed       # creates apothecaria.sqlite, loads ingredients/recipes/customers
+make dev        # uvicorn on http://localhost:8000
+```
+
+Open <http://localhost:8000/api/health> — should return `{"status": "ok"}`.
+
+## Endpoints (Phase A)
+
+| Method | Path | What |
+|---|---|---|
+| GET  | /api/health                    | Health check |
+| GET  | /api/inventory                 | List ingredients |
+| GET  | /api/recipes                   | List recipes (with their ingredients) |
+| POST | /api/customers/spawn           | Spawn a new customer (debugging / demo) |
+| GET  | /api/customers/next            | Get the oldest unserved customer |
+| POST | /api/customers/{id}/serve      | Serve a customer (`{"ingredient_slugs": [...]}`) |
+| POST | /api/brew                      | Combine ingredients (`{"ingredient_slugs": [...]}`) |
+| WS   | /ws/events                     | Live event stream (customer arrivals) |
+
+## Customer state
+
+Active customers live **in memory** on `app.state.customer_store` and are reset on every server restart. The brew/serve event itself is recorded persistently in the `brew_history` table (with the customer fields snapshotted), so analytics queries still work after a customer is gone.
+
+## Configuration
+
+All settings via env vars (prefix `APOTHECARIA_`):
+
+| Variable | Default | Notes |
+|---|---|---|
+| `APOTHECARIA_DATABASE_URL` | `sqlite:///./apothecaria.sqlite` | |
+| `APOTHECARIA_CUSTOMER_ARRIVAL_SECONDS` | `30` | Speed up to `5` while testing |
+| `APOTHECARIA_USE_AGENT_CUSTOMERS` | `false` | M4 will flip this |
+| `APOTHECARIA_USE_CANNED_AGENT` | `false` | Fallback for failed Ollama setup |
+
+## Editing seed content
+
+`backend/apothecaria/content/{ingredients,recipes,customers}.json` is the source of truth.
+The seed loader **upserts** by slug — re-running `make seed` after editing a JSON file
+updates the existing row. Pydantic schemas (`IngredientSeed`, `RecipeSeed`) validate the
+files at load time and produce friendly errors for typos.
+
+## Make targets
+
+| Target | What |
+|---|---|
+| `make dev` | Run uvicorn with reload |
+| `make test` | Run pytest |
+| `make lint` | `ruff check` |
+| `make format` | `ruff format` |
+| `make type` | `mypy` |
+| `make seed` | Upsert JSON content into SQLite |
+| `make db-reset` | Delete the sqlite file and re-seed |
+
+## What's *not* here yet
+
+This is **Phase A** of the workshop project. Phases B–D add: Three.js frontend, the
+in-game agents (M4), the Inventory MCP server (M2), and the in-repo `WORKSHOP.md`
+curriculum guide. The empty `backend/apothecaria/{agents,mcp}/` packages mark where
+M2/M4 will live (their `__init__.py` files carry intent docstrings).
