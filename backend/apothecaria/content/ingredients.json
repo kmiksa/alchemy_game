@@ -1,0 +1,8 @@
+[
+  {"slug": "moonpetal",   "name": "Moonpetal",        "lore": "A pale flower that blooms only under a full moon. Faintly luminescent.", "asset_path": "models/ingredients/moonpetal.glb"},
+  {"slug": "mushroom",    "name": "Sleeper's Cap",    "lore": "A red-spotted mushroom found in mossy hollows. Smells faintly of rain.", "asset_path": "models/ingredients/mushroom.glb"},
+  {"slug": "root",        "name": "Hearthroot",       "lore": "A gnarled root that radiates a soft warmth even when raw.",             "asset_path": "models/ingredients/root.glb"},
+  {"slug": "feather",     "name": "Skylark Feather",  "lore": "Lighter than air. Said to lift the spirit when ground into powder.",   "asset_path": "models/ingredients/feather.glb"},
+  {"slug": "eye-of-newt", "name": "Eye of Newt",      "lore": "Don't ask where these come from. Tradition demands their inclusion.",   "asset_path": "models/ingredients/eye_of_newt.glb"},
+  {"slug": "sage",        "name": "Wild Sage",        "lore": "Pungent and grounding. Burned at thresholds; brewed for clear thought.","asset_path": "models/ingredients/sage.glb"}
+]
