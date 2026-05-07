@@ -1,1 +1,3 @@
-console.log("apothecaria booting");
+import { client } from "./api/client";
+
+console.log("apothecaria booting", client);
