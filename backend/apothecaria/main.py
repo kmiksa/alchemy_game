@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "persona": customer.persona,
                 "ailment_narrative": customer.ailment_narrative,
                 "ailment_category": customer.ailment_category,
+                "sprite": customer.sprite,
             }
         )
 

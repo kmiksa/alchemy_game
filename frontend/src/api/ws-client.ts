@@ -5,6 +5,7 @@ export type CustomerArrivedEvent = {
   persona: string;
   ailment_narrative: string;
   ailment_category: string;
+  sprite: string;
 };
 
 export type WsEvent = CustomerArrivedEvent;

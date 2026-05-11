@@ -4,6 +4,14 @@
   --ink: #3a2a1a;
   --candle-gold: #e6b85c;
   --moonlight: #5a7a9a;
+  --wood: #6a4226;
+  --wood-dark: #3e2614;
+  --wood-light: #8a5a36;
+  --plaster: #d9c79a;
+  --plaster-shadow: #b9a070;
+  --doorway-glow: #4a2a5a;
+  --cauldron-iron: #2a2024;
+  --cauldron-rim: #3a2c2e;
 }
 
 *,
@@ -16,24 +24,230 @@ html,
 body {
   margin: 0;
   height: 100%;
-  background: var(--parchment);
+  background: #1a1208;
   color: var(--ink);
   font-family: "EB Garamond", Georgia, serif;
   font-size: 16px;
   overflow: hidden;
 }
 
+/* ============================================================
+   SCENE — cozy alchemist stand in a painted town backdrop
+   ============================================================ */
+
 #scene {
-  display: block;
-  width: 100vw;
-  height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a0f08;
 }
+
+/* Stage wraps all scene contents and is sized to the painted background's
+   1672x941 aspect (≈1.776). Children position in % of the stage so they track
+   the bg image regardless of viewport size. */
+#scene-stage {
+  position: relative;
+  width: min(100vw, calc(100vh * 1.776));
+  height: min(100vh, calc(100vw / 1.776));
+  background-image: url("/sprites/scene/alchemist-shop.png");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* Invisible occluder matching the painted counter line in the background. */
+#scene-counter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  z-index: 5;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* Overlays the painted bottom shelf in the back-wall cabinet of alchemist-shop.png.
+   Painted shelf bbox: x≈38-65%, y≈26-35%. */
+#scene-shelf {
+  position: absolute;
+  left: 47%;
+  width: 27%;
+  bottom: 66%;
+  height: 10%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 6;
+}
+.shelf-row {
+  position: relative;
+  height: 100%;
+}
+.shelf-row .shelf-jars {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 2%;
+}
+.shelf-row .shelf-board {
+  display: none;
+}
+
+
+/* ============================================================
+   CAULDRON
+   ============================================================ */
+
+#scene-cauldron {
+  position: absolute;
+  left: 56%;
+  bottom: 3%;
+  transform: translateX(-50%);
+  height: 58%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  z-index: 6;
+}
+.cauldron-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
+  transition: filter 600ms ease;
+}
+
+/* ============================================================
+   JARS on the shelf
+   ============================================================ */
+
+.jar {
+  position: relative;
+  height: 90%;
+  aspect-ratio: 7 / 9;
+  cursor: pointer;
+  transition: transform 200ms ease, filter 200ms ease;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+  background: none;
+  border: none;
+  padding: 0;
+}
+.jar:hover {
+  transform: translateY(-6px);
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.55))
+          drop-shadow(0 0 12px rgba(255, 220, 140, 0.35));
+}
+.jar-body {
+  position: absolute;
+  inset: 14% 8% 0 8%;
+  background:
+    radial-gradient(ellipse 60% 30% at 30% 18%, rgba(255, 255, 255, 0.45), transparent 70%),
+    linear-gradient(180deg, var(--jar-body) 0%, var(--jar-body-dark) 100%);
+  border-radius: 22% 22% 14% 14% / 18% 18% 14% 14%;
+  box-shadow:
+    inset -6px 0 8px rgba(0, 0, 0, 0.25),
+    inset 6px 0 8px rgba(255, 255, 255, 0.12);
+}
+.jar-cork {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 0;
+  height: 18%;
+  background: linear-gradient(180deg, #c2895a 0%, #8a5430 100%);
+  border-radius: 30% 30% 8% 8% / 60% 60% 8% 8%;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.35);
+}
+.jar-label {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 4%;
+  height: 22%;
+  background: linear-gradient(180deg, #f3e9d0 0%, #d9c79a 100%);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(58, 42, 26, 0.4);
+}
+.jar-sprite {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 22%;
+  height: 50%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+/* ============================================================
+   CUSTOMER (silhouette in doorway)
+   ============================================================ */
+
+/* Customer stands at the painted register/till on the left of the counter.
+   Painted register bbox: x≈3-15%, y≈50-65%. Customer stands just right of it.
+   --customer-clip-bottom: percent of the container to cut off from the bottom,
+   so the figure's lower body is hidden behind the painted counter line. Increase
+   to crop more of the legs/dress; set to 0% to show the full figure. */
+#scene-customer {
+  --customer-clip-bottom: 45%;
+  position: absolute;
+  left: 4%;
+  bottom: 6%;
+  height: 75%;
+  aspect-ratio: 1;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  clip-path: inset(0 0 var(--customer-clip-bottom) 0);
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.55));
+}
+#scene-customer.visible { opacity: 1; }
+.customer-sprite {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+/* ============================================================
+   FLY LAYER — for ingredient arc animation
+   ============================================================ */
+
+#scene-fly-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.fly-sprite {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
+
+/* ============================================================
+   OVERLAYS — kept from previous version, lightly tweaked
+   ============================================================ */
 
 .overlay {
   position: fixed;
   user-select: none;
 }
-
 .card {
   background: var(--parchment);
   border: 1px solid var(--candle-gold);
@@ -41,7 +255,6 @@ body {
   padding: 18px 20px;
   border-radius: 6px;
 }
-
 .btn {
   font-family: inherit;
   font-size: 16px;
@@ -53,16 +266,9 @@ body {
   border-radius: 4px;
   transition: filter 120ms ease;
 }
-.btn.primary {
-  background: var(--candle-gold);
-}
-.btn:hover {
-  filter: brightness(0.95);
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.btn.primary { background: var(--candle-gold); }
+.btn:hover { filter: brightness(0.95); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 #overlay-customer-dialog {
   top: 24px;
@@ -81,10 +287,7 @@ body {
   margin: 0 0 12px;
   font-size: 14px;
 }
-.customer-card .narrative {
-  margin: 0 0 16px;
-  line-height: 1.45;
-}
+.customer-card .narrative { margin: 0 0 16px; line-height: 1.45; }
 
 #overlay-grimoire-panel {
   top: 50%;
@@ -94,10 +297,7 @@ body {
   width: 80vw;
   z-index: 20;
 }
-.grimoire-card {
-  max-height: 70vh;
-  overflow: auto;
-}
+.grimoire-card { max-height: 70vh; overflow: auto; }
 .grimoire-header {
   display: flex;
   justify-content: space-between;
@@ -109,27 +309,31 @@ body {
   margin: 0;
   font-size: 32px;
 }
-.recipe-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.recipe-list { list-style: none; margin: 0; padding: 0; }
+.recipe-list li { padding: 12px 0; border-top: 1px solid rgba(58, 42, 26, 0.2); }
+.recipe-row { display: flex; gap: 14px; align-items: flex-start; }
+.recipe-sprite {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
-.recipe-list li {
-  padding: 12px 0;
-  border-top: 1px solid rgba(58, 42, 26, 0.2);
+.recipe-text { flex: 1; }
+.toast-row { display: flex; gap: 12px; align-items: flex-start; }
+.toast-sprite {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
 .recipe-list h3 {
   font-family: "Cormorant Garamond", Georgia, serif;
   margin: 0 0 4px;
 }
-.recipe-list .lore {
-  font-style: italic;
-  margin: 4px 0;
-}
-.recipe-list .ings {
-  margin: 4px 0;
-  color: var(--moonlight);
-}
+.recipe-list .lore { font-style: italic; margin: 4px 0; }
+.recipe-list .ings { margin: 4px 0; color: var(--moonlight); }
 .recipe-list .cat {
   margin: 4px 0;
   font-size: 13px;
@@ -151,23 +355,15 @@ body {
   text-transform: capitalize;
   font-size: 22px;
 }
-.toast p {
-  margin: 4px 0;
-}
+.toast p { margin: 4px 0; }
 .toast .meta {
   color: var(--moonlight);
   font-size: 13px;
   letter-spacing: 0.5px;
 }
 @keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -10px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
 
 #overlay-inventory-bar {
@@ -182,19 +378,9 @@ body {
   gap: 24px;
   padding: 14px 20px;
 }
-.bar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.bar-section.flex-grow {
-  flex: 1;
-}
-.bar-section.actions {
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-}
+.bar-section { display: flex; flex-direction: column; gap: 2px; }
+.bar-section.flex-grow { flex: 1; }
+.bar-section.actions { flex-direction: row; gap: 10px; align-items: center; }
 .bar .label {
   font-size: 11px;
   text-transform: uppercase;
@@ -205,9 +391,7 @@ body {
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 26px;
 }
-.bar .contents {
-  font-size: 16px;
-}
+.bar .contents { font-size: 16px; }
 
 #overlay-toast {
   bottom: 100px;
@@ -216,9 +400,7 @@ body {
   max-width: 360px;
   z-index: 40;
 }
-.toast-error {
-  border-color: #a44 !important;
-}
+.toast-error { border-color: #a44 !important; }
 
 #overlay-tooltip {
   pointer-events: none;

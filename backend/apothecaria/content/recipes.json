@@ -1,6 +1,6 @@
 [
-  {"slug": "sleep_draught", "name": "Sleep Draught", "ailment_category": "sleep",   "lore": "A gentle indigo brew that quiets a restless mind.",   "ingredients": ["moonpetal", "sage", "root"]},
-  {"slug": "energy_elixir", "name": "Energy Elixir", "ailment_category": "fatigue", "lore": "A bright fizzing tonic that lifts heavy limbs.",       "ingredients": ["mushroom", "feather"]},
-  {"slug": "calming_tonic", "name": "Calming Tonic", "ailment_category": "anxiety", "lore": "Smells of evening grass. Steadies a fluttering heart.","ingredients": ["sage", "root"]},
-  {"slug": "healing_balm",  "name": "Healing Balm",  "ailment_category": "wound",   "lore": "A thick green balm that knits skin and silences pain.","ingredients": ["moonpetal", "eye-of-newt"]}
+  {"slug": "sleep_draught", "name": "Sleep Draught", "ailment_category": "sleep",   "lore": "A gentle indigo brew that quiets a restless mind.",     "ingredients": ["moonpetal", "sage", "root"], "sprite": "sleep_draught.png"},
+  {"slug": "energy_elixir", "name": "Energy Elixir", "ailment_category": "fatigue", "lore": "A bright fizzing tonic that lifts heavy limbs.",         "ingredients": ["mushroom", "feather"],       "sprite": "energy_elixir.png"},
+  {"slug": "calming_tonic", "name": "Calming Tonic", "ailment_category": "anxiety", "lore": "Smells of evening grass. Steadies a fluttering heart.",  "ingredients": ["sage", "root"],              "sprite": "calming_tonic.png"},
+  {"slug": "healing_balm",  "name": "Healing Balm",  "ailment_category": "wound",   "lore": "A thick green balm that knits skin and silences pain.",  "ingredients": ["moonpetal", "eye-of-newt"],  "sprite": "healing_balm.png"}
 ]

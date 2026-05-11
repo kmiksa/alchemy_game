@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { ApiError, client } from "./api/client";
 import type { Customer } from "./api/client";
 import { makeWsClient } from "./api/ws-client";
@@ -6,9 +5,8 @@ import { session } from "./state/session";
 import { initScene } from "./scene/scene";
 import { createCauldron } from "./scene/cauldron";
 import { createShelf, type Jar } from "./scene/shelf";
-import { createGrimoire } from "./scene/grimoire";
 import { createDoor } from "./scene/door";
-import { arcToCauldron } from "./scene/animations";
+import { animateToCauldron } from "./scene/animations";
 import { createCustomerDialog } from "./ui/customer-dialog";
 import { createGrimoirePanel } from "./ui/grimoire-panel";
 import { createBrewResult } from "./ui/brew-result";
@@ -16,12 +14,9 @@ import { createInventoryBar } from "./ui/inventory-bar";
 import { showToast } from "./ui/toast";
 import "./styles/main.css";
 
-const canvas = document.getElementById("scene") as HTMLCanvasElement;
-const scene = initScene(canvas);
-
-const cauldron = createCauldron(scene.three);
-const grimoireMesh = createGrimoire(scene.three);
-const door = createDoor(scene.three);
+const scene = initScene();
+const cauldron = createCauldron(scene.cauldronContainer);
+const door = createDoor(scene.customerContainer);
 
 const customerDialog = createCustomerDialog();
 const grimoirePanel = createGrimoirePanel();
@@ -29,7 +24,6 @@ const brewResult = createBrewResult();
 const inventoryBar = createInventoryBar();
 
 let shelfJars: Jar[] = [];
-
 const ingredientColors = new Map<string, string>();
 
 void boot();
@@ -40,17 +34,13 @@ async function boot(): Promise<void> {
       client.getInventory(),
       client.getRecipes(),
     ]);
-    const shelf = createShelf(scene.three, inventory);
+    const shelf = createShelf(scene.shelfContainer, inventory);
     shelfJars = shelf.jars;
     grimoirePanel.setRecipes(recipes);
+    brewResult.setRecipes(recipes);
 
     inventory.forEach((i) => {
-      const m = (
-        shelfJars.find((j) => j.ingredient.slug === i.slug)?.mesh.children[0] as
-          | THREE.Mesh
-          | undefined
-      )?.material as THREE.MeshStandardMaterial | undefined;
-      if (m) ingredientColors.set(i.slug, "#" + m.color.getHexString());
+      ingredientColors.set(i.slug, defaultLiquidColorFor(i.slug));
     });
 
     enableJarPicking();
@@ -62,91 +52,70 @@ async function boot(): Promise<void> {
   }
 }
 
+function defaultLiquidColorFor(slug: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < slug.length; i++) {
+    h ^= slug.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const hue = Math.abs(h) % 360;
+  return hslToHex(hue, 55, 40);
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  s /= 100;
+  l /= 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) =>
+    Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))).toString(16).padStart(2, "0");
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 function enableJarPicking(): void {
   const tooltip = document.getElementById("overlay-tooltip")!;
 
-  function pickJar(event: MouseEvent): Jar | null {
-    const rect = canvas.getBoundingClientRect();
-    scene.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    scene.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    scene.raycaster.setFromCamera(scene.pointer, scene.camera);
-    const jarMeshes = shelfJars.map((j) => j.mesh);
-    const hits = scene.raycaster.intersectObjects(jarMeshes, true);
-    if (hits.length === 0) return null;
-    return (
-      shelfJars.find(
-        (j) => hits[0].object === j.mesh.children[0] || hits[0].object.parent === j.mesh,
-      ) ?? null
-    );
-  }
-
-  canvas.addEventListener("click", (event) => {
-    const rect = canvas.getBoundingClientRect();
-    scene.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    scene.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    scene.raycaster.setFromCamera(scene.pointer, scene.camera);
-
-    const bookHits = scene.raycaster.intersectObject(grimoireMesh.hitMesh, true);
-    if (bookHits.length > 0) {
-      grimoirePanel.toggle();
-      return;
-    }
-
-    const jar = pickJar(event);
-    if (jar) addJarToCauldron(jar);
-  });
-
-  canvas.addEventListener("pointermove", (event) => {
-    const jar = pickJar(event);
-    if (jar) {
+  for (const jar of shelfJars) {
+    jar.el.addEventListener("click", () => addJarToCauldron(jar));
+    jar.el.addEventListener("pointerenter", (event) => {
       tooltip.textContent = jar.ingredient.name;
       tooltip.hidden = false;
-      tooltip.style.left = `${event.clientX + 12}px`;
-      tooltip.style.top = `${event.clientY + 12}px`;
-      canvas.style.cursor = "pointer";
-    } else {
+      tooltip.style.left = `${event.clientX + 14}px`;
+      tooltip.style.top = `${event.clientY + 14}px`;
+    });
+    jar.el.addEventListener("pointermove", (event) => {
+      tooltip.style.left = `${event.clientX + 14}px`;
+      tooltip.style.top = `${event.clientY + 14}px`;
+    });
+    jar.el.addEventListener("pointerleave", () => {
       tooltip.hidden = true;
-      canvas.style.cursor = "default";
-    }
-  });
-
-  canvas.addEventListener("pointerleave", () => {
-    tooltip.hidden = true;
-    canvas.style.cursor = "default";
-  });
+    });
+  }
 }
 
 function addJarToCauldron(jar: Jar): void {
-  const flying = jar.mesh.clone();
-  scene.three.add(flying);
-  arcToCauldron(
-    flying,
-    jar.basePosition.clone(),
-    cauldron.liquidPosition.clone(),
-    0.7,
-    () => {
-      scene.three.remove(flying);
-      session.addIngredient(jar.ingredient.slug);
-      cauldron.setLiquidColor(blendedCauldronColor());
-    },
-  );
+  animateToCauldron(jar.el, scene.cauldronContainer, scene.flyLayer, jar.spriteUrl, () => {
+    session.addIngredient(jar.ingredient.slug);
+    cauldron.setLiquidColor(blendedCauldronColor());
+  });
 }
 
 function blendedCauldronColor(): string {
   const slugs = session.get().cauldronContents;
   if (slugs.length === 0) return "#2a3a3a";
-  const c = new THREE.Color("#000");
-  let n = 0;
+  let r = 0, g = 0, b = 0, n = 0;
   for (const s of slugs) {
     const hex = ingredientColors.get(s);
-    if (hex) {
-      c.add(new THREE.Color(hex));
-      n += 1;
-    }
+    if (!hex) continue;
+    const m = hex.replace("#", "");
+    r += parseInt(m.slice(0, 2), 16);
+    g += parseInt(m.slice(2, 4), 16);
+    b += parseInt(m.slice(4, 6), 16);
+    n++;
   }
   if (n === 0) return "#2a3a3a";
-  c.multiplyScalar(1 / n);
-  return "#" + c.getHexString();
+  const toHex = (v: number) => Math.round(v / n).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 function wireOverlays(): void {
@@ -166,9 +135,7 @@ function wireOverlays(): void {
     cauldron.resetColor();
   });
 
-  inventoryBar.onGrimoire(() => {
-    grimoirePanel.toggle();
-  });
+  inventoryBar.onGrimoire(() => grimoirePanel.toggle());
 
   customerDialog.onServe(async () => {
     const c = session.get().currentCustomer;
@@ -214,11 +181,12 @@ function connectWs(): void {
         ailment_narrative: event.ailment_narrative,
         ailment_category: event.ailment_category,
         expected_recipe_slug: "",
+        sprite: event.sprite,
       };
       if (!session.get().currentCustomer) {
         session.setCurrentCustomer(c);
         customerDialog.show(c);
-        door.showCustomer();
+        door.showCustomer(c.sprite);
       }
     }
   });

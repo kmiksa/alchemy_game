@@ -36,6 +36,7 @@ def make_customer(template: CustomerTemplate) -> CustomerInstance:
         ailment_narrative=template.ailment_narrative,
         ailment_category=template.ailment_category,
         expected_recipe_slug=template.expected_recipe_slug,
+        sprite=template.sprite,
         arrived_at=datetime.utcnow(),
     )
 

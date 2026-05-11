@@ -1,73 +1,57 @@
-import * as THREE from "three";
-
-export type Tween = (dt: number) => boolean;
-
-const tweens = new Set<Tween>();
-
-export function tickTweens(dt: number): void {
-  for (const t of tweens) {
-    if (!t(dt)) tweens.delete(t);
-  }
-}
-
-export function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-}
-
-export function arcToCauldron(
-  obj: THREE.Object3D,
-  start: THREE.Vector3,
-  end: THREE.Vector3,
-  durationSec: number,
-  onDone?: () => void,
+/** Animate a clone of `srcEl` flying along an arc to `targetEl`'s center. */
+export function animateToCauldron(
+  srcEl: HTMLElement,
+  targetEl: HTMLElement,
+  flyLayer: HTMLElement,
+  spriteUrl: string,
+  onComplete: () => void,
 ): void {
-  let elapsed = 0;
-  const peak = Math.max(start.y, end.y) + 1.5;
-  obj.position.copy(start);
-  tweens.add((dt) => {
-    elapsed += dt;
-    const t = Math.min(elapsed / durationSec, 1);
-    const e = easeInOut(t);
-    obj.position.x = THREE.MathUtils.lerp(start.x, end.x, e);
-    obj.position.z = THREE.MathUtils.lerp(start.z, end.z, e);
-    const linY = THREE.MathUtils.lerp(start.y, end.y, e);
-    const arc = 4 * (peak - Math.max(start.y, end.y)) * t * (1 - t);
-    obj.position.y = linY + arc;
-    if (t >= 1) {
-      onDone?.();
-      return false;
-    }
-    return true;
-  });
+  const src = srcEl.getBoundingClientRect();
+  const tgt = targetEl.getBoundingClientRect();
+  const layer = flyLayer.getBoundingClientRect();
+
+  const startX = src.left + src.width / 2 - layer.left - 40;
+  const startY = src.top + src.height / 2 - layer.top - 40;
+  const endX = tgt.left + tgt.width / 2 - layer.left - 40;
+  const endY = tgt.top + tgt.height * 0.32 - layer.top - 40;
+
+  const sprite = document.createElement("img");
+  sprite.src = spriteUrl;
+  sprite.className = "fly-sprite";
+  sprite.style.left = `${startX}px`;
+  sprite.style.top = `${startY}px`;
+  flyLayer.appendChild(sprite);
+
+  const peakY = Math.min(startY, endY) - 120;
+  sprite.animate(
+    [
+      { transform: "translate(0,0) rotate(0deg) scale(1)", offset: 0 },
+      {
+        transform: `translate(${(endX - startX) * 0.5}px, ${peakY - startY}px) rotate(180deg) scale(0.85)`,
+        offset: 0.5,
+      },
+      {
+        transform: `translate(${endX - startX}px, ${endY - startY}px) rotate(360deg) scale(0.4)`,
+        offset: 1,
+      },
+    ],
+    { duration: 700, easing: "cubic-bezier(0.45, 0, 0.55, 1)", fill: "forwards" },
+  ).onfinish = () => {
+    sprite.remove();
+    onComplete();
+  };
 }
 
-export function fadeAlpha(
-  material: THREE.Material & { opacity: number; transparent: boolean },
-  to: number,
-  durationSec: number,
-): void {
-  const from = material.opacity;
-  material.transparent = true;
-  let elapsed = 0;
-  tweens.add((dt) => {
-    elapsed += dt;
-    const t = Math.min(elapsed / durationSec, 1);
-    material.opacity = THREE.MathUtils.lerp(from, to, easeInOut(t));
-    return t < 1;
-  });
+export function fadeIn(el: HTMLElement, durationMs = 600): void {
+  el.hidden = false;
+  el.style.transitionDuration = `${durationMs}ms`;
+  requestAnimationFrame(() => el.classList.add("visible"));
 }
 
-export function colorLerp(
-  material: THREE.MeshStandardMaterial,
-  to: THREE.Color,
-  durationSec: number,
-): void {
-  const from = material.color.clone();
-  let elapsed = 0;
-  tweens.add((dt) => {
-    elapsed += dt;
-    const t = Math.min(elapsed / durationSec, 1);
-    material.color.copy(from).lerp(to, easeInOut(t));
-    return t < 1;
-  });
+export function fadeOut(el: HTMLElement, durationMs = 600): void {
+  el.classList.remove("visible");
+  el.style.transitionDuration = `${durationMs}ms`;
+  setTimeout(() => {
+    if (!el.classList.contains("visible")) el.hidden = true;
+  }, durationMs);
 }

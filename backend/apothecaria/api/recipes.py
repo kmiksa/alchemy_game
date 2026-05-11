@@ -14,6 +14,7 @@ class RecipeOut(BaseModel):
     name: str
     ailment_category: str
     lore: str
+    sprite: str
     ingredient_slugs: list[str]
 
 
@@ -26,6 +27,7 @@ def list_recipes(session: Session = Depends(get_session)) -> list[RecipeOut]:
             name=r.name,
             ailment_category=r.ailment_category,
             lore=r.lore,
+            sprite=r.sprite,
             ingredient_slugs=[link.ingredient.slug for link in r.ingredient_links],
         )
         for r in rows

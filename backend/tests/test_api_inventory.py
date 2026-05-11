@@ -17,4 +17,4 @@ def test_inventory_item_shape(client, db_engine):
         seed_database(conn)
     response = client.get("/api/inventory")
     item = response.json()[0]
-    assert {"slug", "name", "lore", "asset_path"} <= set(item.keys())
+    assert {"slug", "name", "lore", "sprite"} <= set(item.keys())

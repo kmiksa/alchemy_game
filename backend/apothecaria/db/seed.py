@@ -45,7 +45,7 @@ def _seed_ingredients(session: Session) -> None:
             ing = existing[row.slug]
             ing.name = row.name
             ing.lore = row.lore
-            ing.asset_path = row.asset_path
+            ing.sprite = row.sprite
         else:
             session.add(Ingredient(**row.model_dump()))
     session.flush()
@@ -61,6 +61,7 @@ def _seed_recipes(session: Session) -> None:
             recipe.name = row.name
             recipe.ailment_category = row.ailment_category
             recipe.lore = row.lore
+            recipe.sprite = row.sprite
             recipe.ingredient_links.clear()
             session.flush()
             recipe.ingredient_links = [
@@ -72,6 +73,7 @@ def _seed_recipes(session: Session) -> None:
                 name=row.name,
                 ailment_category=row.ailment_category,
                 lore=row.lore,
+                sprite=row.sprite,
             )
             recipe.ingredient_links = [
                 RecipeIngredient(ingredient_id=by_slug[s].id) for s in row.ingredients

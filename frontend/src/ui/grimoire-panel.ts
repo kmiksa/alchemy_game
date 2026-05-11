@@ -21,11 +21,14 @@ export function createGrimoirePanel(): GrimoirePanel {
           ${recipes
             .map(
               (r) => `
-            <li>
-              <h3>${esc(r.name)}</h3>
-              <p class="lore">${esc(r.lore)}</p>
-              <p class="ings">${r.ingredient_slugs.map(esc).join(" + ")}</p>
-              <p class="cat">For ${esc(r.ailment_category)}</p>
+            <li class="recipe-row">
+              ${r.sprite ? `<img class="recipe-sprite" src="/sprites/potions/${esc(r.sprite)}" alt="" />` : ""}
+              <div class="recipe-text">
+                <h3>${esc(r.name)}</h3>
+                <p class="lore">${esc(r.lore)}</p>
+                <p class="ings">${r.ingredient_slugs.map(esc).join(" + ")}</p>
+                <p class="cat">For ${esc(r.ailment_category)}</p>
+              </div>
             </li>
           `,
             )

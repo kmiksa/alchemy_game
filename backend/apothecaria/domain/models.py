@@ -10,7 +10,7 @@ class IngredientSeed(BaseModel):
     slug: str = Field(min_length=1)
     name: str = Field(min_length=1)
     lore: str = ""
-    asset_path: str = ""
+    sprite: str = ""
 
 
 class RecipeSeed(BaseModel):
@@ -20,6 +20,7 @@ class RecipeSeed(BaseModel):
     name: str = Field(min_length=1)
     ailment_category: str = Field(min_length=1)
     lore: str = ""
+    sprite: str = ""
     ingredients: list[str] = Field(min_length=1)
 
 
@@ -33,6 +34,7 @@ class CustomerTemplate(BaseModel):
     ailment_category: str
     expected_recipe_slug: str
     patience_seconds: int = 60
+    sprite: str = ""
 
 
 class CustomerInstance(BaseModel):
@@ -45,6 +47,7 @@ class CustomerInstance(BaseModel):
     ailment_narrative: str
     ailment_category: str
     expected_recipe_slug: str
+    sprite: str = ""
     arrived_at: datetime
 
 

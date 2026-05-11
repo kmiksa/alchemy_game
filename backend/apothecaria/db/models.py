@@ -13,7 +13,7 @@ class Ingredient(Base):
     slug: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(100))
     lore: Mapped[str] = mapped_column(Text, default="")
-    asset_path: Mapped[str] = mapped_column(String(255), default="")
+    sprite: Mapped[str] = mapped_column(String(255), default="")
 
 
 class Recipe(Base):
@@ -24,6 +24,7 @@ class Recipe(Base):
     name: Mapped[str] = mapped_column(String(100))
     ailment_category: Mapped[str] = mapped_column(String(50), index=True)
     lore: Mapped[str] = mapped_column(Text, default="")
+    sprite: Mapped[str] = mapped_column(String(255), default="")
 
     ingredient_links: Mapped[list["RecipeIngredient"]] = relationship(
         back_populates="recipe", cascade="all, delete-orphan", lazy="selectin"

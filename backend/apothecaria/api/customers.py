@@ -22,6 +22,7 @@ class CustomerOut(BaseModel):
     ailment_narrative: str
     ailment_category: str
     expected_recipe_slug: str
+    sprite: str
 
 
 class ServeBody(BaseModel):
@@ -43,6 +44,7 @@ def _to_out(customer: CustomerInstance) -> CustomerOut:
         ailment_narrative=customer.ailment_narrative,
         ailment_category=customer.ailment_category,
         expected_recipe_slug=customer.expected_recipe_slug,
+        sprite=customer.sprite,
     )
 
 

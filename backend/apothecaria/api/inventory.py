@@ -13,7 +13,7 @@ class IngredientOut(BaseModel):
     slug: str
     name: str
     lore: str
-    asset_path: str
+    sprite: str
 
     model_config = {"from_attributes": True}
 

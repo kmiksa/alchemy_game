@@ -2,7 +2,7 @@ export type Ingredient = {
   slug: string;
   name: string;
   lore: string;
-  asset_path: string;
+  sprite: string;
 };
 
 export type Recipe = {
@@ -10,6 +10,7 @@ export type Recipe = {
   name: string;
   ailment_category: string;
   lore: string;
+  sprite: string;
   ingredient_slugs: string[];
 };
 
@@ -20,6 +21,7 @@ export type Customer = {
   ailment_narrative: string;
   ailment_category: string;
   expected_recipe_slug: string;
+  sprite: string;
 };
 
 export type BrewResult = {
