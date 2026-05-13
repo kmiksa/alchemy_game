@@ -74,19 +74,19 @@ files at load time and produce friendly errors for typos.
 
 ## Frontend
 
-- Vite + TypeScript + Three.js, all procedural geometry (no asset files).
+- Vite + TypeScript. The scene is plain DOM + CSS — no Three.js, no WebGL.
 - Vanilla DOM overlays for the four panels (customer dialog, grimoire, brew result, inventory bar).
+- Ingredient art lives in `frontend/public/sprites/ingredients/` as PNGs, referenced by the `sprite` field in `ingredients.json`. Jar body color is derived from the slug as a fallback.
 - `make dev` starts both processes; backend is `[api]`-prefixed, frontend `[web]`-prefixed.
 - `make build` produces a static bundle in `frontend/dist/`.
 - `make install` runs `npm install` inside `frontend/`. Run it once after cloning.
 
 ### Adding a new ingredient
 
-The frontend has no asset files. Adding an ingredient is purely a backend edit:
-
-1. Edit `backend/apothecaria/content/ingredients.json`.
-2. Run `make seed` (upsert).
-3. Refresh the browser. A new jar appears on the shelf, color derived from the slug.
+1. Drop a PNG into `frontend/public/sprites/ingredients/` (or reuse an existing one).
+2. Add an entry to `backend/apothecaria/content/ingredients.json` with `slug`, `name`, `lore`, and `sprite` (filename only).
+3. Run `make seed` (upsert).
+4. Refresh the browser. A new jar appears on the shelf with that sprite; the jar body color is derived from the slug.
 
 The M1 workshop module wraps this flow in a `/new-ingredient` skill.
 
