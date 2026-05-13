@@ -43,7 +43,6 @@ Run from the `alchemy_game` repo root. The point of this exercise is to **see th
   ```text
    > /exit
   ```
-
 2. **Create `.github/copilot-instructions.md`** by hand:
   ```bash
    mkdir -p .github
@@ -66,20 +65,17 @@ When writing or updating a Python function or method, give it a docstring in thi
 - Skip `self` from the parameter list on methods.
 ```
 
-
-3. **Confirm the CLI is reading the instructions file.** Start a fresh `copilot` session and ask for `/env`:
+1. **Confirm the CLI is reading the instructions file.** Start a fresh `copilot` session and ask for `/env`:
   ```text
    > /env
   ```
-   `/env` lists the instructions, agents, skills, and MCP servers the session has loaded. You should see `.github/copilot-instructions.md` in the list.  
-
-4. **Ask for a docstring on a *different* function — `pick_next_template` in the same file:**
+   `/env` lists the instructions, agents, skills, and MCP servers the session has loaded. You should see `.github/copilot-instructions.md` in the list.
+2. **Ask for a docstring on a *different* function — `pick_next_template` in the same file:**
   ```text
    > Add a docstring to pick_next_template in @backend/apothecaria/domain/customer_queue.py. Follow the project's docstring conventions.
   ```
-   Note the prompt does **not** describe the format anywhere — the CLI gets it from `.github/copilot-instructions.md`.  
-
-5. **Compare the two docstrings with `git diff`:**
+   Note the prompt does **not** describe the format anywhere — the CLI gets it from `.github/copilot-instructions.md`.
+3. **Compare the two docstrings with `git diff`:**
   ```bash
    git diff backend/apothecaria/domain/customer_queue.py
   ```
