@@ -7,7 +7,7 @@
 - **Copilot CLI can search the web.** When a prompt asks about something current (docs, library versions, "where do I put X"), the CLI can hit search engines, fetch pages, and cite sources back to you. You don't have to leave the terminal to look something up.
 - **`/research`** is the dedicated slash command for deep investigation. It pulls from GitHub and the web, follows links, and synthesizes a report. Use it when you want more than a one-shot answer.
 - **Why this beats memorizing docs** — official docs move. File paths, command flags, and config schemas change between CLI versions. Searching at the moment you need it is more reliable than recalling whatever the model trained on.
-- **Project vs. global instructions** — in [exercise 03](./03-custom-instructions.md) you put `AGENTS.md` in the repo so it applies to *this* project. Global instructions live in your home directory and apply to *every* project you open with Copilot CLI. We'll find out exactly where via the CLI itself.
+- **Project vs. global instructions** — in [exercise 03](./03-custom-instructions.md) you put `.github/copilot-instructions.md` in the repo so it applies to *this* project. Global instructions live in your home directory and apply to *every* project you open with Copilot CLI. We'll find out exactly where via the CLI itself.
 
 ## Steps
 
@@ -48,7 +48,7 @@
    > /env
    ```
 
-   The output should list both the project-level `AGENTS.md` (from exercise 03) **and** the new global one.
+   The output should list both the project-level `.github/copilot-instructions.md` (from exercise 03) **and** the new global one.
 
 6. **Sanity-check that the rule applies.** Ask the CLI to add a comment to any function:
 
@@ -63,10 +63,11 @@
 
 - [ ] The CLI returns a research answer with cited URLs
 - [ ] A global instructions file exists at the path the CLI identified
-- [ ] `/env` in this repo lists **both** the project `AGENTS.md` and the global file
+- [ ] `/env` in this repo lists **both** the project `.github/copilot-instructions.md` and the global file
 
 ## References
 
 - [GitHub Copilot CLI command reference](https://docs.github.com/en/copilot/reference/cli-command-reference) — includes `/research`
 - [Use Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli)
-- [AGENTS.md — open standard](https://agents.md/) — covers the user-level / global location too
+- [Add repository custom instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions) — covers user-level / global locations
+- [AGENTS.md — cross-platform open standard](https://agents.md/)

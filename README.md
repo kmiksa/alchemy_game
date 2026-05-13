@@ -1,12 +1,46 @@
+<!-- Apothecaria — workshop starter -->
 # Apothecaria — workshop starter
 
 A cozy alchemist's apothecary. The starter you clone before the GitHub Copilot CLI workshop.
 
 ## Prerequisites
 
-- Python 3.12 (`pyenv install 3.12` if needed)
-- [`uv`](https://docs.astral.sh/uv/) — `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Node 20+
+You need Python 3.12, [`uv`](https://docs.astral.sh/uv/) (the Python package manager that runs `uv sync`), and Node 20+.
+
+**macOS / Linux:**
+
+```bash
+# uv — Python package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Python 3.12 — uv can install it for you
+uv python install 3.12
+
+# Node 20+ — via Homebrew (macOS) or your distro's package manager
+brew install node                                  # macOS
+# or: curl -fsSL https://fnm.vercel.app/install | bash && fnm install 20
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# uv
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Python 3.12
+uv python install 3.12
+
+# Node 20+
+winget install OpenJS.NodeJS.LTS
+```
+
+Verify everything is on your `PATH`:
+
+```bash
+uv --version && python3.12 --version && node --version && make --version
+```
+
+> Windows users: `make` isn't installed by default. Use [Chocolatey](https://chocolatey.org/) (`choco install make`) or run the underlying commands from the [Make targets](#make-targets) table directly.
 
 ## Quickstart
 

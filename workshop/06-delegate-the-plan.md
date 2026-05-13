@@ -79,7 +79,7 @@ make seed
 
 ## Tips
 
-- **The cloud agent reads `AGENTS.md`.** The custom docstring/style rules you set up in [exercise 03](./03-custom-instructions.md) apply on the cloud too. The PR should respect them.
+- **The cloud agent reads your instructions file.** The custom docstring/style rules you set up in [exercise 03](./03-custom-instructions.md) (`.github/copilot-instructions.md`) apply on the cloud too. The PR should respect them.
 - **Cancel and retry.** If the agent goes off the rails, cancel the run from its page and re-delegate with a sharper prompt.
 - **Delegate is async, not magic.** Don't pile up 10 delegations and lose track. One in flight at a time is plenty for most workflows.
 
