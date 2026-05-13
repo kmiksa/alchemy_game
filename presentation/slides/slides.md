@@ -33,7 +33,7 @@ layout: intro
 **Jakub Miksa**
 Head of AI @ **Elastics**
 
-We build the **Bloomberg terminal for prediction markets**.
+We build the **AI Agents for prediction markets**.
 
 <!--
 Quick context for who I am and why I care about this. Keep this short — 60 seconds. The interesting part is what we're going to build with the agent.
@@ -374,11 +374,11 @@ layout: section
 Apothecaria — a cozy alchemist's apothecary.
 
 <div class="mt-8 opacity-75">
-16 exercises. Concepts introduced as we go.
+8 exercises. New concepts introduced as we need them.
 </div>
 
 <!--
-This is the second half. We move from "what is copilot CLI" to "what does an agentic-coding workflow actually look like." We'll write code, edit AGENTS.md, install a plugin, build a skill, build MCP servers, and ship a real pydantic-ai agent — all on a single game. Pace: keep moving. We do not have to finish all 16. Pick the modules that resonate.
+This is the second half. We move from "what is copilot CLI" to "what does an agentic-coding workflow actually look like." Eight exercises, each layering one new concept on the last: instructions, web research, plan/review, delegation, skills, plugins. Same game throughout.
 -->
 
 ---
@@ -386,8 +386,8 @@ This is the second half. We move from "what is copilot CLI" to "what does an age
 # Setup — boot the game
 
 ```bash
-git clone https://github.com/jakubmiksa/alchemy_game.git apothecaria
-cd apothecaria
+git clone https://github.com/jakubmiksa/alchemy_game.git
+cd alchemy_game
 uv sync && make install && make seed && make dev
 ```
 
@@ -405,156 +405,168 @@ Drag two ingredients onto the cauldron. Serve a customer.
 </v-click>
 
 <!--
-Same rule as before — we don't move on until every laptop has the apothecary on screen. If `make seed` fails, it's almost always Python 3.12 not being on PATH.
+We don't move on until every laptop has the apothecary on screen. If `make seed` fails, it's almost always Python not being on PATH or `uv` missing.
 -->
 
 ---
 layout: section
 ---
 
-# Ex 1–2
+# Ex 1
 
-Warm-up: prompts and `@file` context.
+Install & first prompt — point Copilot at the repo.
 
 <!--
-Two short exercises to establish the muscle memory: anchor every prompt with @file, and let the agent find code on its own.
+The intro got copilot on every laptop. Ex 1 is where they actually start using it: ask it to summarize the repo, tell them how to run it, then make a small config change. Establishes the muscle memory: ask in plain English, let the CLI read.
 -->
 
 ---
 
-# Ex 1 — add docstrings
-
-```text
-> Add docstrings to all public functions and classes in
-> @backend/apothecaria/domain/brewing.py.
-> Use sphinx-style :param: and :return:. Example:
->
->   :param product_ids: list of item_group_ids
->   :return: alternative products for each provided id
-```
-
-<v-click>
-
-- `@file` reference → agent reads, doesn't guess.
-- Example inside the prompt → **few-shot**, agent mirrors style.
-- `git diff` afterwards → review every change.
-
-</v-click>
-
-<!--
-The format example is what makes this work. Without it, the agent picks Google or numpy style. Always show one example when you have a strong style preference.
--->
-
----
-
-# Ex 2 — make the first customer arrive faster
-
-```text
-> The first customer takes 30 seconds to appear. I want to test
-> brewing faster — make it 5 seconds. Look around the codebase
-> first to understand how arrivals are timed.
-```
-
-<v-click>
-
-The agent uses **Explore** automatically: greps `config.py`, finds `customer_arrival_seconds`, proposes two options.
-
-</v-click>
-
-<v-click>
+# Ex 1 — first prompts
 
 ```bash
-APOTHECARIA_CUSTOMER_ARRIVAL_SECONDS=5 make backend-dev
+cd alchemy_game
+copilot
+> /login
 ```
 
-Env var, not a code edit. Defaults stay sane.
-
-</v-click>
-
-<!--
-Push back when the agent proposes hard-coding a 5-second default. This is the recurring lesson: the agent will happily do the wrong thing.
--->
-
----
-layout: section
----
-
-# New concept
-
-`AGENTS.md` — the team rules file.
-
-<!--
-First custom-instructions slide. After this point, every prompt in the workshop is influenced by what we put in AGENTS.md. Worth pausing on.
--->
-
----
-
-# AGENTS.md
-
-<v-clicks>
-
-- Plain markdown at the repo root. Copilot reads it on every session.
-- Cross-tool standard ([agents.md](https://agents.md/)) — Claude, Gemini, Cursor all read it.
-- *If you'd say it to every new engineer on day one, it goes here.*
-
-</v-clicks>
-
-<div v-click class="mt-6 grid grid-cols-2 gap-6 text-sm">
-
-<div>
-
-### Project — `<repo>/AGENTS.md`
-
-Team conventions, stack, commands.
-
-</div>
-
-<div>
-
-### Personal — `~/.copilot/AGENTS.md`
-
-Your style. Terse output. `uv` over `pip`.
-
-</div>
-
-</div>
-
-<!--
-Two scopes. Both load on every session. Project wins on conflict because it's more specific.
--->
-
----
-
-# Ex 3 + 5 — write the rules file
+<v-click>
 
 ```text
-> /init
-```
-
-<v-click>
-
-`/init` drafts a baseline. Then append:
-
-```markdown
-## Code style — docstrings
-Sphinx-style with :param: and :return:.
-Example: <paste the recommendation example from Ex 1>
-
-## Pydantic models
-All BaseModel classes live in backend/apothecaria/domain/models.py.
-Do not create per-feature models.py.
+> What does this repo do? Analyze the repo, then give me a summary
+> of what the project is and how the pieces fit together.
 ```
 
 </v-click>
 
 <v-click>
 
-Then in a fresh session: re-run Ex 1 on a different file. The style sticks **without re-specifying it**. That's the win.
+```text
+> How do I run this game locally? Walk me through the prerequisites
+> and the exact commands. Tell me which ports the backend and
+> frontend listen on and what URL to open.
+```
 
 </v-click>
 
 <!--
-The "no per-feature models.py" rule is the big one — it prevents the most common LLM-generated mess: a new schema file every time the agent needs a type.
+Two prompts. No @file references yet — the CLI opens files itself. The reply should pull from README.md and Makefile.
+-->
+
+---
+
+# Ex 1 — speed up customer arrivals
+
+```text
+> A customer takes 30 seconds to appear in the game, which is too
+> slow while I'm testing. Change the configuration so the first
+> customer appears after 3 seconds instead.
+```
+
+<v-click>
+
+The CLI finds `config.py`
+
+</v-click>
+
+<!--
+The recurring lesson starts here: the agent will happily do the wrong thing. Defaults stay sane; the env knob is the right answer.
+-->
+
+---
+layout: section
+---
+
+# Ex 2
+
+Essential slash commands — control the session.
+
+<!--
+Slash commands govern the session, not the AI's reasoning. Picking a model, watching the context window, compacting, resuming. The boring infrastructure that makes long sessions actually work.
+-->
+
+---
+
+# Ex 2 — slash commands you'll use daily
+
+<div class="grid grid-cols-2 gap-x-8 gap-y-2 mt-4 text-sm">
+
+<div>
+
+**Session control**
+- `/model` — pick the brain (Claude Sonnet 4.5, GPT-5, …)
+- `/clear` — drop conversation, keep session
+- `/new` — start fresh, save current to history
+- `/resume` — pick a past session
+
+</div>
+
+<div>
+
+**Context**
+- `/context` — how full is the window?
+- `/compact` — summarize and free up space
+- `/rewind` — roll back to an earlier turn
+
+</div>
+
+<div>
+
+**Inspection**
+- `/diff` — see what changed in the tree
+- `/cwd` — where am I?
+- `/statusline` — pin the values you care about
+
+</div>
+
+<div>
+
+**One-offs**
+- `/ask <q>` — single Q that doesn't pollute history
+- `/help` — list everything
+
+</div>
+
+</div>
+
+<!--
+Don't read every line. Cluster: control the session, watch context, inspect work. /compact is the one that buys you long sessions — runs automatically near the limit, manually when answers get fuzzy.
+-->
+
+---
+
+# Ex 2 — load context, compact it
+
+```text
+> @backend/apothecaria/ Briefly: what are the main modules and
+> how do they relate?
+> /context
+```
+
+<v-click>
+
+```text
+> @frontend/src/ How is the Three.js scene organized?
+> /context
+```
+
+Note the token count climb.
+
+</v-click>
+
+<v-click>
+
+```text
+> /compact
+> /context
+```
+
+Same conversation, smaller footprint. The summary preserves findings; the raw chat is gone.
+
+</v-click>
+
+<!--
+Show the numbers live. The drop after /compact is the "aha" — the model isn't losing what it learned, just dropping the verbose history.
 -->
 
 ---
@@ -563,56 +575,174 @@ layout: section
 
 # New concept
 
-Plugins — installable bundles.
+Custom instructions — rules that fire on every prompt.
 
 <!--
-We teased plugins in the foundations deck. Now we install one and inherit a whole workflow.
+First custom-context concept. After this, every prompt in the workshop is influenced by what we put in the instructions file. Worth pausing on.
 -->
 
 ---
 
-# Plugins
+# Three places to put rules
 
-<v-clicks>
-
-- A bundle of **skills + MCP configs + commands**, installed once.
-- You don't write a plugin from scratch — you install one.
-- Browse: [github/awesome-copilot](https://github.com/github/awesome-copilot).
-
-</v-clicks>
+| File | Scope | When to use |
+|---|---|---|
+| `.github/copilot-instructions.md` | **Repo-wide** | Primary recommendation. Every prompt in this repo. |
+| `.github/instructions/<name>.instructions.md` | Path-glob | Subsets — backend-only, tests-only. |
+| `AGENTS.md` (root) | Cross-tool | Same file works for Claude, Gemini, Cursor. |
 
 <div v-click class="mt-6 opacity-75">
 
-We install [Playwright](https://github.com/microsoft/playwright-mcp): real browser, screenshot tool, click+drag. Closes the "VS Code wins for UI work" gap from the foundations deck.
+Rule of thumb: *if you'd say it to every new engineer on day one, it goes here.*
 
 </div>
 
 <!--
-Plugins are how teams standardize. One person sets up, everyone installs, everyone gets the same agentic workflow.
+We use the GH-native path. AGENTS.md is the cross-tool option for teams using multiple agents. Same idea, different filename.
 -->
 
 ---
 
-# Ex 6 — install Playwright, drive the shop
-
-```bash
-copilot
-> /plugin install playwright
-```
+# Ex 3 — see the before/after
 
 ```text
-> Open http://localhost:5173, screenshot the shop. Then drag the
-> mandrake jar onto the cauldron and screenshot again.
+> Add a docstring to make_customer in
+> @backend/apothecaria/domain/customer_queue.py.
 ```
 
 <v-click>
 
-Two PNGs. Different. The agent now has eyes on the browser — UI testing without leaving the CLI.
+No instructions file yet → Google-style ("Args:" / "Returns:"). Keep the change.
+
+</v-click>
+
+<v-click>
+
+Create `.github/copilot-instructions.md`:
+
+```markdown
+## Docstrings
+Short one-line summary.
+Use this when <when a caller should reach for this>.
+:param <name>: <description>
+:return: <description>
+
+- reST style — not Google "Args:"/"Returns:".
+- Skip `:return:` when the function returns None.
+```
 
 </v-click>
 
 <!--
-First-run downloads ~200MB of Chromium. Pre-warn the room before everyone hits the network.
+The before/after is the whole point. Same model, same prompt structure — only the instructions file changed.
+-->
+
+---
+
+# Ex 3 — confirm and compare
+
+```text
+> /env
+```
+
+<v-click>
+
+`/env` lists what the session loaded: instructions, agents, skills, MCPs. You should see `.github/copilot-instructions.md`.
+
+</v-click>
+
+<v-click>
+
+```text
+> Add a docstring to pick_next_template in
+> @backend/apothecaria/domain/customer_queue.py.
+> Follow the project's docstring conventions.
+```
+
+```bash
+git diff backend/apothecaria/domain/customer_queue.py
+```
+
+Two docstrings, two styles, side by side.
+
+</v-click>
+
+<!--
+The prompt for pick_next_template does NOT describe the format — the file does. That's the win you're showing.
+-->
+
+---
+layout: section
+---
+
+# Ex 4
+
+Web research — `/research` and global instructions.
+
+<!--
+The CLI can search the web. Useful for things the model won't remember accurately (file paths, version-specific config). We use it to find where global instructions live, then write one.
+-->
+
+---
+
+# Ex 4 — research a real question
+
+```text
+> /research Where do GitHub Copilot CLI global / user-level
+> instruction files live, and what filenames does the CLI look for?
+```
+
+<v-click>
+
+The CLI cites URLs. Verify the path makes sense (something under `~/.copilot/`).
+
+</v-click>
+
+<v-click>
+
+Then have the CLI create it for you:
+
+```text
+> Create that file at the path you found and add a single starter
+> rule: "When asked to add comments, never explain WHAT the code
+> does — only the WHY when non-obvious."
+```
+
+</v-click>
+
+<!--
+/research is the deep-dive variant — pulls from GitHub and the web, follows links, synthesizes. Use it when one-shot Q&A isn't enough.
+-->
+
+---
+
+# Ex 4 — confirm both layers load
+
+```text
+> /env
+```
+
+<v-click>
+
+`/env` should list **both** files:
+- Project: `.github/copilot-instructions.md`
+- Global: `~/.copilot/AGENTS.md` (or wherever the research told you)
+
+</v-click>
+
+<v-click>
+
+```text
+> Add a comment to make_customer explaining what's happening.
+> /diff
+```
+
+The global rule kicks in: the CLI either pushes back ("rule says no WHAT-comments") or writes WHY-only.
+
+</v-click>
+
+<!--
+Project + global layered. Project wins on conflict — more specific. This is the same pattern we'll see for skills and MCPs later.
 -->
 
 ---
@@ -624,7 +754,7 @@ layout: section
 Built-in agents — `/plan` and `/review`.
 
 <!--
-Biggest behavior change: stop autocompleting. Plan first, implement against the plan, review after. This is the discipline that separates working *with* an agent from being run over by one.
+Biggest behavior change in the whole workshop: stop autocompleting. Plan first, implement against the plan, review after. This is the discipline that separates working *with* an agent from being run over by one.
 -->
 
 ---
@@ -638,8 +768,9 @@ Biggest behavior change: stop autocompleting. Plan first, implement against the 
 ### `/plan`
 
 - Step-by-step plan **before** any code.
+- Investigates the repo to find files you didn't know mattered.
 - You read it. Push back. Edit.
-- Catches "I'll add a new file" mistakes early.
+- Also: Shift+Tab, or `copilot --plan`.
 
 </div>
 
@@ -647,9 +778,9 @@ Biggest behavior change: stop autocompleting. Plan first, implement against the 
 
 ### `/review`
 
-- Reads your staged diff.
-- Flags missing tests, edge cases, style.
-- *Not* a substitute for human review.
+- Reads your staged + unstaged diff.
+- Flags issues with severity tags.
+- Cheap enough to run before every commit.
 
 </div>
 
@@ -657,43 +788,168 @@ Biggest behavior change: stop autocompleting. Plan first, implement against the 
 
 <div v-click class="mt-8 opacity-75">
 
-Behind the scenes: both delegate to **Explore** and **Task** sub-agents in parallel.
+Same model. Different orchestration. Plan = investigation. Review = critique.
 
 </div>
 
 <!--
-Walk through both columns. Land the point: /review is good but it misses architectural drift. Reference "Don't be John."
+The plan agent's superpower is investigating files you didn't know to look at. "Add a new mixture" sounds simple — the plan surfaces the JSON-seed-loader flow you'd otherwise miss.
 -->
 
 ---
 
-# Ex 7 — Plan → Implement → Review a new mixture
+# Ex 5 — plan Fog Veil, then implement
 
 ```text
-> /plan Add ingredient "dragon's breath chili" and recipe
-> "dragonfire-tonic" (chili + ginger + honey, treats frostbite).
-> Seed JSONs are in @backend/apothecaria/content/.
+> /plan I want to add a new mixture called "Fog Veil" —
+> ailment_category="confusion", ingredients=["moonpetal", "sage",
+> "feather"], with a short flavor line for lore. It should show
+> up in /api/recipes, be brewable via /api/brew, and survive a
+> server restart. Investigate the codebase first.
 ```
 
 <v-click>
 
-Read the plan. Push back on:
-- "I'll add a new model file" → **no**, AGENTS.md says one models.py.
-- "I'll write a migration" → **no**, seed loader upserts.
+A good plan surfaces:
+- Source of truth is `backend/apothecaria/content/recipes.json` — not Python.
+- `make seed` upserts JSON into SQLite. No migration needed.
+- Tests live in `backend/tests/test_api_recipes.py`.
 
 </v-click>
 
 <v-click>
 
 ```text
-> Implement the plan.
-> /review
+> Looks good. Proceed: add the recipe, run make seed, and extend
+> the test to assert Fog Veil appears with its three ingredients.
 ```
 
 </v-click>
 
 <!--
-The pushback step is the whole exercise. The agent will propose unnecessary files. Catch it before any code is written.
+The plan is the deliverable. If it names the wrong files, that's the moment to catch it — before any code is touched.
+-->
+
+---
+
+# Ex 5 — verify, then `/review`
+
+```text
+> !make seed
+> !make test
+```
+
+<v-click>
+
+The `!` prefix runs a shell command without the AI in the loop.
+
+</v-click>
+
+<v-click>
+
+```text
+> /review
+```
+
+Reads the diff. Flags `[CRITICAL]` / `[HIGH]` / `[MEDIUM]` / `[LOW]` items: slug typos, JSON formatting drift, loose assertions, missing trailing newlines.
+
+</v-click>
+
+<!--
+/review isn't a substitute for human review — it catches obvious stuff cheaply so your human reviewer focuses on architecture.
+-->
+
+---
+layout: section
+---
+
+# Ex 6
+
+Delegate the plan — hand it to the cloud agent.
+
+<!--
+Ex 5's plan was the perfect input for a cloud agent: self-contained, file-backed, no ambiguity. Now we hand the same task to GitHub's cloud infrastructure instead of running it locally.
+-->
+
+---
+
+# `/delegate` — same task, different runtime
+
+<v-clicks>
+
+- Hands a self-contained task to the **Copilot cloud agent**.
+- Runs on GitHub's infra. Edits on a branch. Opens a PR.
+- Your terminal stays free.
+- **The pattern**: `/plan` to investigate → save the plan → `/delegate` with the plan attached → review the PR.
+
+</v-clicks>
+
+<div v-click class="mt-6 opacity-75">
+
+When to reach for it: bounded but tedious work — many similar edits, big test passes, repetitive refactors. **Not** for: needs your local DB, secrets, unmerged deps, or back-and-forth iteration.
+
+</div>
+
+<!--
+The cloud agent can't pause to ask "did you mean X or Y?". That's why pairing it with /plan matters — you've already removed the ambiguity.
+-->
+
+---
+
+# Ex 6 — save the plan, delegate it
+
+```bash
+git restore backend/apothecaria/content/recipes.json \
+            backend/tests/test_api_recipes.py
+make seed     # undo Ex 5 so the cloud agent has real work
+```
+
+<v-click>
+
+```text
+> /plan ...same prompt as Ex 5...
+> Save this plan to docs/plans/fog-veil.md
+```
+
+</v-click>
+
+<v-click>
+
+```text
+> /delegate Execute the plan in @docs/plans/fog-veil.md exactly.
+> Add the recipe, extend the test, run make seed and make test,
+> and open a PR titled "Add Fog Veil mixture".
+```
+
+The CLI returns a URL to the cloud run / draft PR.
+
+</v-click>
+
+<!--
+Save the plan to a file so the cloud agent has the same source of truth you read. Vague prompts produce wrong PRs — file-backed plans don't.
+-->
+
+---
+
+# Ex 6 — review the PR
+
+<v-clicks>
+
+- Open the URL. Watch the agent's progress log, file edits, test results.
+- Review the diff like any other PR: does it match the plan, only the right files?
+- Check CI. If something's off, leave a comment — the agent iterates on feedback.
+- Merge. Pull. Verify locally.
+
+</v-clicks>
+
+<div v-click class="mt-6 opacity-75">
+
+**Fallback** — no cloud agent? `copilot --autopilot` runs the plan locally without pausing for confirmations. No PR, but same hands-off feel.
+
+</div>
+
+<!--
+Cloud agents are confident, not infallible. The review step is where you stay in the loop.
 -->
 
 ---
@@ -705,96 +961,101 @@ layout: section
 Skills — auto-triggered playbooks.
 
 <!--
-We just did Ex 7 manually. A Skill encodes that workflow so the *next* "add a new potion" runs the same way. Skills are how you turn one-off recipes into team muscle memory.
+Ex 5 and Ex 6 added Fog Veil. The workflow worked. A Skill encodes that workflow so the *next* "add a mixture" runs the same way without re-investigating. Skills are how you turn one-off recipes into team muscle memory.
 -->
 
 ---
 
-# AGENTS.md vs Skill vs Agent
+# Instructions vs Agents vs Skills
 
 | Shape | Triggers | Use for |
 |---|---|---|
-| **AGENTS.md** | Always on | Project-wide rules ("use sphinx docstrings") |
-| **Skill** | On user intent | Workflows ("add a new mixture") |
-| **Agent** | When invoked (`/agent`) | Personas ("be a security reviewer") |
+| **Instructions** | Always on | Project-wide rules ("use reST docstrings") |
+| **Agents** (`/plan`, `/review`) | When invoked | Different ways of thinking |
+| **Skills** | On prompt match | Specific repeatable playbooks |
 
 <div v-click class="mt-6 opacity-75">
 
-Same model under the hood. Three different shapes for **when** the instructions fire.
+Rule of thumb: **instructions** for *style*, **agents** for *process*, **skills** for *playbooks*.
 
 </div>
 
 <!--
-Engineers confuse these constantly. Land the table. The trigger column is what makes them different.
+Engineers confuse these. Land the table. The trigger column is what makes them different. Same model under the hood.
 -->
 
 ---
 
-# Ex 8 — `/new-mixture` skill
+# Ex 7 — `new-mixture` skill
 
-`.github/skills/new-mixture.skill.md`:
+`.github/skills/new-mixture/SKILL.md`:
 
 ```markdown
 ---
-description: Use when adding a new potion / mixture / recipe.
-Triggers on "add a new potion", "create a recipe".
+name: new-mixture
+description: Use when the user asks to add a new mixture,
+  recipe, potion, or brew to the Apothecaria game.
 ---
 
-1. Confirm details — name, ailment category, ingredients.
-2. Edit content/ingredients.json (new ingredients first).
-3. Edit content/recipes.json.
-4. Run `make seed`. Run `make test`.
-5. Tell user to refresh the browser.
+# New Mixture
+
+## Required inputs
+- slug, name, ailment_category, ingredients, lore.
+- If anything missing → ask before proceeding.
+
+## Steps
+1. Validate ingredients exist.
+2. Confirm slug + ingredient-set uniqueness.
+3. Add entry to recipes.json.
+4. make seed && make test.
+5. Branch, commit, push, open PR.
+```
+
+<!--
+Skill is a *checklist*, not a script. The description field is the discovery mechanism — list every phrase a user might say. "mixture, recipe, potion, brew" hits four triggers.
+-->
+
+---
+
+# Ex 7 — reload, trigger, confirm
+
+```text
+> /skills reload
+> /skills list
 ```
 
 <v-click>
 
-Test in a fresh session:
+You should see `new-mixture`. Inspect with `/skills info new-mixture`.
+
+</v-click>
+
+<v-click>
+
+Trigger naturally:
 
 ```text
-> Add a potion "moonlit balm" — cures insomnia, uses
-> lavender, chamomile, silver dust.
+> Add a new mixture called "Sorrowmend Cordial" — ailment_category
+> sorrow, ingredients [root, moonpetal, feather]. Lore: a warm
+> amber draught that softens grief without numbing it.
 ```
+
+The CLI follows the checklist instead of re-investigating.
+
+</v-click>
+
+<v-click>
+
+```text
+> What skills did you use for that last task?
+```
+
+Should mention `new-mixture`. If not, edit the `description` to match how you asked.
 
 </v-click>
 
 <!--
-Skill is a *checklist*, not a script. Use plain-language trigger phrases — what would a teammate say?
--->
-
----
-layout: section
----
-
-# Ex 9 – 11
-
-Practice. Ship features.
-
-<!--
-The previous exercises set up the rails. Now use them. No new concepts — just /plan + skill + AGENTS.md applied to real feature work.
--->
-
----
-
-# Ship three features
-
-<v-clicks>
-
-- **Ex 9** — pricing & a player wallet. Customers pay; ingredients cost money.
-- **Ex 10** — per-ingredient stock counts. Brew → decrement. Stock 0 → jar fades.
-- **Ex 11** — an ingredient store. Buy individual ingredients with coins.
-
-</v-clicks>
-
-<div v-click class="mt-8 opacity-75">
-
-Use `/plan` for each. Push back on stray files. `/review` before commit.
-The Store API in Ex 11 is what the **MCP server** in Ex 12 will expose — build it cleanly.
-
-</div>
-
-<!--
-This is the practice block. If running short on time, pick one feature and skip the others. Ex 11 is the most important — it sets up Ex 12.
+If the skill doesn't fire, the description is wrong — not the model. Use the words a real user would use, not technical jargon.
 -->
 
 ---
@@ -803,21 +1064,21 @@ layout: section
 
 # New concept
 
-MCP — give your agent new senses.
+Plugins & MCP — new tools the agent can call.
 
 <!--
-Up to here, the agent has only edited files and run shell. MCP is how you wire it up to the *running* application — read live state, take live actions. The leap from "AI that writes code" to "AI that operates software."
+Everything so far has been about HOW the agent works (instructions, agents, skills). Plugins change WHAT it can do — they add new tools. MCP is the standard interface.
 -->
 
 ---
 
-# MCP servers
+# Plugins & MCP
 
 <v-clicks>
 
-- Expose **tools** (functions) and **resources** (data) over JSON-RPC.
-- Speak stdio or HTTP.
-- The agent picks a tool the same way it picks a Python function — but the tool runs on **your** machine, against **your** state.
+- **Plugins** extend Copilot CLI's toolkit at runtime — browser control, DBs, Slack, Linear, image gen.
+- Most plugins are **MCP servers** — small processes exposing tools over a standard protocol (Model Context Protocol).
+- Point Copilot at the server, it lists the tools at startup, the model invokes them like built-ins.
 
 </v-clicks>
 
@@ -825,268 +1086,92 @@ Up to here, the agent has only edited files and run shell. MCP is how you wire i
 
 <div>
 
-### `inventory_mcp`
+**Built-in tools**
 
-- `list_ingredients()`
-- `get_stock(slug)`
+Read files. Write files. Run shell.
 
 </div>
 
 <div>
 
-### `store_mcp`
+**With a plugin**
 
-- `list_for_sale()`
-- `buy(slug, qty)`
+Click buttons. Take screenshots. Query databases. Post to Slack.
 
 </div>
 
 </div>
 
 <!--
-Two thin wrappers around the FastAPI endpoints we already built in Ex 9-11. The point isn't the implementation — it's that the agent can now READ live state and SPEND money.
+Plugins are the leap from "AI that edits code" to "AI that operates software." We install one now — Playwright — to drive the apothecary's frontend.
 -->
 
 ---
 
-# Ex 12 — wire MCPs into copilot
-
-`mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "inventory": { "command": "uv", "args": ["run", "-m",
-      "apothecaria.mcp.inventory_mcp"] },
-    "store":     { "command": "uv", "args": ["run", "-m",
-      "apothecaria.mcp.store_mcp"] }
-  }
-}
-```
-
-<v-click>
-
-Restart copilot. Then:
-
-```text
-> Which ingredients are low on stock? Restock anything below 3.
-```
-
-</v-click>
-
-<v-click>
-
-The agent calls `list_ingredients` → identifies low stock → calls `buy(...)` until stock ≥ 3. **It's operating your shop.**
-
-</v-click>
-
-<!--
-This is the moment that lands. Watch the wallet drop in the UI in real time. The agent isn't writing code anymore — it's running the app.
--->
-
----
-
-# Ex 13 — local LLM (Ollama + Gemma)
+# Ex 8 — install Playwright
 
 ```bash
-brew install ollama
-ollama pull gemma:2b      # 2B params, runs on a laptop
-ollama serve &
+make dev    # in another terminal — frontend must be running
 ```
 
 <v-click>
-
-Why local? Ex 14 generates **customer dialogue** — fires every time someone is served. Frontier APIs are overkill and they cost real money during a workshop.
-
-</v-click>
-
-<!--
-Pre-pull the weights on every laptop the night before. Don't burn workshop minutes on a 2GB download.
--->
-
----
-layout: section
----
-
-# New concept
-
-Agents in code — pydantic-ai.
-
-<!--
-"Agent" up to here meant something inside copilot. pydantic-ai shows the OTHER meaning: an agent inside YOUR application — same idea (LLM + tools + a loop), but it ships as part of your software, not your editor.
--->
-
----
-
-# Two meanings of "agent"
-
-<div class="grid grid-cols-2 gap-8 mt-6">
-
-<div>
-
-### Inside copilot
-
-`/plan`, `/review`, custom `.agent.md` files.
-
-You **invoke** them. They live in your editor.
-
-</div>
-
-<div>
-
-### Inside your app
-
-`pydantic-ai`, `langchain`, your own loop.
-
-You **ship** them. They run in production.
-
-</div>
-
-</div>
-
-<div v-click class="mt-8 opacity-75">
-
-Same architecture: LLM + tools + a loop. Different lifecycle.
-The agent that ships *is the one you own and debug.*
-
-</div>
-
-<!--
-This is the frontier most engineers miss. Copilot writes the code. The PRODUCTION agent is something you wrote, you own, and you ship.
--->
-
----
-
-# Ex 14 — `CustomerAgent` uses our MCPs
-
-```python
-from pydantic_ai import Agent
-from pydantic_ai.mcp import MCPServerStdio
-
-inventory = MCPServerStdio("uv", ["run", "-m", "apothecaria.mcp.inventory_mcp"])
-store     = MCPServerStdio("uv", ["run", "-m", "apothecaria.mcp.store_mcp"])
-
-customer_agent = Agent(
-    "ollama:gemma:2b",
-    mcp_servers=[inventory, store],
-    system_prompt="""
-        You are a customer leaving the apothecary. 1-2 sentences.
-        If stock of a key ingredient < 3, mention it — and you may
-        call store.buy() to help.
-    """,
-)
-```
-
-<!--
-The same MCP servers from Ex 12 — now used inside our backend, not by copilot. That's the reuse story: write the MCP once, use it from your editor AND from your app.
--->
-
----
-
-# Wire it into the serve endpoint
-
-```text
-> /plan In @backend/apothecaria/api/customers.py, when serving
-> a customer, call @backend/apothecaria/agents/customer_agent.py
-> to generate the customer_response. Fall back to canned text
-> if the agent times out (>3s).
-```
-
-<v-click>
-
-Brew, serve, watch the LLM-generated dialogue. Repeat enough times → stock gets low → **the agent autonomously calls `store.buy`**.
-
-</v-click>
-
-<!--
-The fallback matters. Local LLMs cold-start slow. A 3s timeout with a canned fallback is the workshop-friendly default.
--->
-
----
-layout: section
----
-
-# New concept
-
-Logfire — see what your agent did.
-
-<!--
-You can't debug what you can't see. A pydantic-ai agent that calls MCP tools, decides things, occasionally makes wrong decisions, is opaque by default. Logfire is the X-ray.
--->
-
----
-
-# A trace, in Logfire
-
-```
-agent.run("Customer=Anya, outcome=DELIGHTED")
-├── llm_call(model="gemma:2b", tokens_in=412, tokens_out=87)
-├── tool_call(name="inventory.list_ingredients")
-│   └── result=[{slug=lavender, stock=2}, ...]
-├── tool_call(name="store.buy", args={slug=lavender, qty=3})
-│   └── result={ok: true, new_stock: 5}
-└── llm_call(model="gemma:2b", tokens_in=531, tokens_out=44)
-    └── output="Aaah, restock the lavender, you'll need more."
-```
-
-<div v-click class="mt-4 opacity-75">
-
-Every span clickable. Token costs roll up. Errors highlight red.
-
-</div>
-
-<!--
-This is the slide that lands the value. Read the trace out loud. The agent's reasoning is no longer opaque — every decision and every tool call is right there.
--->
-
----
-
-# Ex 15 — instrument the agent
-
-```python
-import logfire
-logfire.configure()
-logfire.instrument_pydantic_ai()
-logfire.instrument_fastapi(app)   # bonus: HTTP traces too
-```
 
 ```bash
-export LOGFIRE_TOKEN=pylf_v1_w_...    # write token, in .env
+npm install -g @playwright/mcp
+# or run on-demand: npx -y @playwright/mcp@latest
 ```
+
+First run downloads Chromium (~150 MB).
+
+</v-click>
 
 <v-click>
 
-Restart backend. Brew. Serve. Open the Logfire dashboard.
+```bash
+copilot
+> /mcp add playwright npx -y @playwright/mcp@latest
+> /mcp list
+> /mcp info playwright
+```
 
-One trace per `serve` call, MCP and LLM spans nested underneath.
+Lists `browser_navigate`, `browser_click`, `browser_snapshot`, `browser_take_screenshot`, etc.
 
 </v-click>
 
 <!--
-Three lines of instrumentation, full visibility. .env the token — never commit it.
+/mcp add is per-session by default. To persist, add to `.github/copilot/mcp.json` or `~/.copilot/mcp.json`.
 -->
 
 ---
 
-# Ex 16 — share the dashboard
+# Ex 8 — drive the shop with English
 
-<v-clicks>
+```text
+> Open the alchemy game at http://localhost:5173 in the browser.
+> Wait for the first customer to arrive, read what they're asking
+> for, brew the matching potion using the ingredients in the
+> workshop, and take a screenshot of the result. Tell me what
+> happened at each step.
+```
 
-- **Write token** (`pylf_v1_w_...`) — your app sends data with this.
-- **Read token** (`pylf_v1_r_...`) — anyone with this can browse traces.
+<v-click>
 
-</v-clicks>
+A Chromium window pops up. The CLI clicks through the UI and streams its reasoning: "I see a customer asking for X. I'll select these ingredients and click Brew."
 
-<div v-click class="mt-6">
+</v-click>
 
-Send a read-token URL to a non-engineer in the room.
+<v-click>
 
-They open it, click an interaction, **read what the agent thought** — without ever touching the code.
+```text
+> Which tools did you use for that last task?
+```
 
-</div>
+Should mention `playwright`/`browser_*` tools. If not, re-check `/mcp list`.
+
+</v-click>
 
 <!--
-This is the punchline. Observability isn't just for engineers anymore. PMs, support, on-call all get the same lens. Agents are software your whole team owns.
+Don't name tools in the prompt. The model picks: "click the brew button" → browser_click; "what's on the page now?" → browser_snapshot. Plain English in, the right tool out.
 -->
 
 ---
@@ -1095,11 +1180,11 @@ layout: statement
 
 # What we built
 
-From copilot prompts to a production agent with full observability.
+From copilot prompts to a CLI that drives a real browser and operates the app.
 
 <v-click>
 
-In one workshop.
+In eight exercises.
 
 </v-click>
 
@@ -1113,20 +1198,19 @@ Hold this slide. Let it sink in.
 
 <v-clicks>
 
-1. Copilot CLI — wrote code with prompts and `@file` (Ex 1–2)
-2. `AGENTS.md` — encoded team standards (Ex 3, 5)
-3. **Plugins** — installed Playwright (Ex 6)
-4. **Built-in agents** — `/plan` + `/review` (Ex 7)
-5. **Skills** — `/new-mixture` (Ex 8)
-6. Real product features (Ex 9–11)
-7. **MCP** — agent operates the running shop (Ex 12)
-8. **pydantic-ai** — agent inside our backend (Ex 13–14)
-9. **Logfire** — anyone can see what the agent did (Ex 15–16)
+1. **Ex 1** — Install, first prompts, config tweaks
+2. **Ex 2** — Slash commands: model, context, compact, resume
+3. **Ex 3** — **Custom instructions** — `.github/copilot-instructions.md`
+4. **Ex 4** — **`/research`** + global instructions in `~/.copilot/`
+5. **Ex 5** — **`/plan` and `/review`** built-in agents
+6. **Ex 6** — **`/delegate`** to the cloud agent
+7. **Ex 7** — **Skills** — `new-mixture` auto-triggered playbook
+8. **Ex 8** — **Plugins / MCP** — Playwright drives the browser
 
 </v-clicks>
 
 <!--
-Walk down the list. Every bold word is a concept they now own. The unbolded ones are practice.
+Walk down the list. Every bold word is a concept they now own. Instructions for style, agents for process, skills for playbooks, plugins for new senses.
 -->
 
 ---
@@ -1135,7 +1219,9 @@ layout: end
 
 # Done
 
-You've shipped an agent. Now go ship one in prod.
+Eight exercises. One game. The full agentic-coding stack.
+
+Now go uweaily your creativity.
 
 <!--
 End on action. The point of the workshop is what they do *next week*, not what they did *today*.
