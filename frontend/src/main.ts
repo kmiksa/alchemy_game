@@ -30,14 +30,16 @@ void boot();
 
 async function boot(): Promise<void> {
   try {
-    const [inventory, recipes] = await Promise.all([
+    const [inventory, recipes, player] = await Promise.all([
       client.getInventory(),
       client.getRecipes(),
+      client.getPlayer(),
     ]);
     const shelf = createShelf(scene.shelfContainer, inventory);
     shelfJars = shelf.jars;
     grimoirePanel.setRecipes(recipes);
     brewResult.setRecipes(recipes);
+    session.setMoney(player.money);
 
     inventory.forEach((i) => {
       ingredientColors.set(i.slug, defaultLiquidColorFor(i.slug));
@@ -125,6 +127,7 @@ function wireOverlays(): void {
     try {
       const r = await client.brew(slugs);
       brewResult.showBrew(r);
+      await refreshJarQuantities();
     } catch (err) {
       showToast(errorText(err), "error");
     }
@@ -148,12 +151,13 @@ function wireOverlays(): void {
     try {
       const r = await client.serve(c.id, slugs);
       brewResult.showServe(r);
-      session.setReputation(r.new_reputation);
+      session.setMoney(r.new_money);
       session.setCurrentCustomer(null);
       session.clearCauldron();
       cauldron.resetColor();
       customerDialog.hide();
       door.hideCustomer();
+      await refreshJarQuantities();
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         showToast("That customer has left the shop");
@@ -165,6 +169,19 @@ function wireOverlays(): void {
       }
     }
   });
+}
+
+async function refreshJarQuantities(): Promise<void> {
+  try {
+    const inventory = await client.getInventory();
+    const bySlug = new Map(inventory.map((i) => [i.slug, i.quantity]));
+    for (const jar of shelfJars) {
+      const qty = bySlug.get(jar.ingredient.slug);
+      if (qty !== undefined) jar.updateQuantity(qty);
+    }
+  } catch {
+    // silent — quantities will refresh on next action
+  }
 }
 
 function connectWs(): void {

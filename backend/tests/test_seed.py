@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from apothecaria.db.models import Ingredient, PlayerState, Recipe
+from apothecaria.db.models import Ingredient, PlayerInventory, PlayerState, Recipe, StoreItem
 from apothecaria.db.seed import _seed_ingredients, seed_database
 
 
@@ -36,7 +36,7 @@ def test_seed_creates_player_state(db_engine):
     with Session(db_engine) as session:
         state = session.get(PlayerState, 1)
         assert state is not None
-        assert state.reputation == 0
+        assert state.money == 0
 
 
 def test_seed_is_idempotent_no_duplicates(db_engine):
@@ -75,3 +75,26 @@ def test_seed_validation_rejects_bad_data(tmp_path, monkeypatch, db_engine):
     monkeypatch.setattr(seed_mod, "CONTENT_DIR", tmp_path)
     with Session(db_engine) as session, pytest.raises(ValidationError):
         _seed_ingredients(session)
+
+
+def test_seed_creates_player_inventory(db_engine):
+    with db_engine.connect() as conn:
+        seed_database(conn)
+    with Session(db_engine) as session:
+        rows = session.scalars(select(PlayerInventory)).all()
+        assert len(rows) == 6
+        for row in rows:
+            assert row.quantity == 20
+
+
+def test_seed_creates_store_items(db_engine):
+    with db_engine.connect() as conn:
+        seed_database(conn)
+    with Session(db_engine) as session:
+        items = session.scalars(select(StoreItem)).all()
+        assert len(items) == 6
+        slugs_prices = {item.ingredient.slug: item.price for item in items}
+        assert slugs_prices["moonpetal"] == 5
+        assert slugs_prices["eye-of-newt"] == 8
+        for item in items:
+            assert item.stock > 0

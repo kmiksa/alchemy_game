@@ -4,6 +4,7 @@ export type Jar = {
   el: HTMLElement;
   ingredient: Ingredient;
   spriteUrl: string;
+  updateQuantity: (qty: number) => void;
 };
 
 export type Shelf = {
@@ -43,6 +44,7 @@ function makeJar(ing: Ingredient): Jar {
   bodyDiv.className = "jar-body";
   const label = document.createElement("div");
   label.className = "jar-label";
+  label.textContent = String(ing.quantity);
 
   const spriteUrl = `/sprites/ingredients/${ing.sprite || `${ing.slug}.png`}`;
   const sprite = document.createElement("img");
@@ -51,7 +53,14 @@ function makeJar(ing: Ingredient): Jar {
   sprite.alt = "";
 
   el.append(bodyDiv, cork, sprite, label);
-  return { el, ingredient: ing, spriteUrl };
+  return {
+    el,
+    ingredient: ing,
+    spriteUrl,
+    updateQuantity(qty: number) {
+      label.textContent = String(qty);
+    },
+  };
 }
 
 export function createShelf(container: HTMLElement, ingredients: Ingredient[]): Shelf {

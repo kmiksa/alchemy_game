@@ -3,7 +3,7 @@ import type { Customer } from "../api/client";
 export type Session = {
   currentCustomer: Customer | null;
   cauldronContents: string[];
-  reputation: number;
+  money: number;
 };
 
 type Listener = (state: Readonly<Session>) => void;
@@ -11,7 +11,7 @@ type Listener = (state: Readonly<Session>) => void;
 const state: Session = {
   currentCustomer: null,
   cauldronContents: [],
-  reputation: 0,
+  money: 0,
 };
 
 const listeners = new Set<Listener>();
@@ -32,8 +32,8 @@ export const session = {
     state.cauldronContents = [];
     notify();
   },
-  setReputation(value: number): void {
-    state.reputation = value;
+  setMoney(value: number): void {
+    state.money = value;
     notify();
   },
   subscribe(listener: Listener): () => void {

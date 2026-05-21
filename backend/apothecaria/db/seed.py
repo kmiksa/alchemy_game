@@ -9,11 +9,13 @@ from sqlalchemy.orm import Session
 
 from apothecaria.db.models import (
     Ingredient,
+    PlayerInventory,
     PlayerState,
     Recipe,
     RecipeIngredient,
+    StoreItem,
 )
-from apothecaria.domain.models import IngredientSeed, RecipeSeed
+from apothecaria.domain.models import IngredientSeed, RecipeSeed, StoreSeed
 
 CONTENT_DIR = Path(__file__).resolve().parents[1] / "content"
 
@@ -34,6 +36,8 @@ def seed_database(connection: Connection) -> None:
         _seed_ingredients(session)
         _seed_recipes(session)
         _seed_player_state(session)
+        _seed_player_inventory(session)
+        _seed_store(session)
         session.commit()
 
 
@@ -84,8 +88,44 @@ def _seed_recipes(session: Session) -> None:
 
 def _seed_player_state(session: Session) -> None:
     if session.get(PlayerState, 1) is None:
-        session.add(PlayerState(id=1, reputation=0, brews_count=0))
+        session.add(PlayerState(id=1, money=0, brews_count=0))
         session.flush()
+
+
+STARTING_QUANTITY = 20
+
+
+def _seed_player_inventory(session: Session) -> None:
+    """Give the player a generous starting stock of every ingredient.
+
+    Use this when seeding a fresh or reset database.
+    """
+    ingredients = session.scalars(select(Ingredient)).all()
+    existing = {pi.ingredient_id for pi in session.scalars(select(PlayerInventory)).all()}
+    for ing in ingredients:
+        if ing.id in existing:
+            continue
+        session.add(PlayerInventory(ingredient_id=ing.id, quantity=STARTING_QUANTITY))
+    session.flush()
+
+
+def _seed_store(session: Session) -> None:
+    """Load store prices and stock from content/store.json.
+
+    Use this when seeding a fresh or reset database.
+    """
+    rows = [StoreSeed.model_validate(r) for r in _load_json("store.json")]
+    by_slug = {i.slug: i for i in session.scalars(select(Ingredient)).all()}
+    existing = {si.ingredient_id: si for si in session.scalars(select(StoreItem)).all()}
+    for row in rows:
+        ing = by_slug[row.ingredient_slug]
+        if ing.id in existing:
+            item = existing[ing.id]
+            item.price = row.price
+            item.stock = row.stock
+        else:
+            session.add(StoreItem(ingredient_id=ing.id, price=row.price, stock=row.stock))
+    session.flush()
 
 
 def main() -> None:

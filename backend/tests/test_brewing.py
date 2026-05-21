@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import select
 
 from apothecaria.db.seed import seed_database
 from apothecaria.domain.brewing import combine_ingredients
@@ -60,3 +61,34 @@ def test_fog_veil_exact_match(seeded_session):
     assert result.matched_recipe_name == "Fog Veil"
     assert result.matched_ailment_category == "confusion"
     assert result.quality_score == 1.0
+
+
+def test_brewing_consumes_ingredients(seeded_session):
+    from apothecaria.db.models import Ingredient, PlayerInventory
+
+    moon_id = seeded_session.scalar(select(Ingredient.id).where(Ingredient.slug == "moonpetal"))
+    before = seeded_session.get(PlayerInventory, moon_id)
+    assert before is not None
+    qty_before = before.quantity
+
+    combine_ingredients(["moonpetal", "sage", "root"], seeded_session)
+
+    seeded_session.expire_all()
+    after = seeded_session.get(PlayerInventory, moon_id)
+    assert after is not None
+    assert after.quantity == qty_before - 1
+
+
+def test_insufficient_quantity_fails_gracefully(seeded_session):
+    from apothecaria.db.models import Ingredient, PlayerInventory
+
+    moon_id = seeded_session.scalar(select(Ingredient.id).where(Ingredient.slug == "moonpetal"))
+    pi = seeded_session.get(PlayerInventory, moon_id)
+    assert pi is not None
+    pi.quantity = 0
+    seeded_session.flush()
+
+    result = combine_ingredients(["moonpetal", "sage", "root"], seeded_session)
+    assert result.matched_recipe_slug is None
+    assert result.quality_score == 0.0
+    assert "not enough" in result.description.lower()
