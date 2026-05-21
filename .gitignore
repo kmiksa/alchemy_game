@@ -26,5 +26,11 @@ __pycache__/
 node_modules/
 dist/
 .vite/
-.chainlit
+docs/
+
+# Secrets
 .env
+
+# Chainlit
+.chainlit/
+.files/
