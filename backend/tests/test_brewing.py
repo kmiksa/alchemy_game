@@ -50,5 +50,5 @@ def test_extra_ingredient_is_not_a_match(seeded_session):
 
 
 def test_subset_is_not_a_match(seeded_session):
-    result = combine_ingredients(["moonpetal", "sage"], seeded_session)
+    result = combine_ingredients(["moonpetal", "root"], seeded_session)
     assert result.matched_recipe_slug is None
