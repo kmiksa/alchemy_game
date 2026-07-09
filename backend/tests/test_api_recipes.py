@@ -7,9 +7,9 @@ def test_recipes_returns_four(client, db_engine):
     response = client.get("/api/recipes")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 4
+    assert len(data) == 5
     slugs = {r["slug"] for r in data}
-    assert {"sleep_draught", "energy_elixir", "calming_tonic", "healing_balm"} == slugs
+    assert {"sleep_draught", "energy_elixir", "calming_tonic", "healing_balm", "fog_veil"} == slugs
 
 
 def test_recipe_lists_ingredients(client, db_engine):

@@ -22,12 +22,27 @@ def pick_next_template(
     rng: random.Random | None = None,
     templates: list[CustomerTemplate] | None = None,
 ) -> CustomerTemplate:
+    """Select a random customer template from the available pool.
+
+    Use this when choosing which customer archetype will arrive next.
+    :argument rng: optional RNG instance for deterministic selection.
+    :argument templates: explicit template list; defaults to loading from disk.
+    :return: A randomly chosen CustomerTemplate.
+    """
     rng = rng or random.Random()
     pool = templates if templates is not None else load_templates()
     return rng.choice(pool)
 
 
 def make_customer(template: CustomerTemplate) -> CustomerInstance:
+    """Instantiate a live customer from a static template.
+
+    Use this when spawning a new customer into the queue.
+    :param template: The static customer definition to materialise.
+    :return: A new CustomerInstance with a unique id and current timestamp.
+    """
+    # Hydrate the static template into a unique, time-stamped instance so the
+    # same archetype can appear multiple times without identity collisions.
     return CustomerInstance(
         id=str(uuid.uuid4()),
         template_slug=template.slug,
@@ -73,18 +88,24 @@ class CustomerStore:
 
 
 async def arrival_loop(
-    interval_seconds: float,
+    interval_seconds: float | Callable[[], float],
     store: CustomerStore,
     on_arrival: Callable[[CustomerInstance], Awaitable[None]],
     rng: random.Random | None = None,
 ) -> None:
     """Spawn a new customer every ``interval_seconds`` and call ``on_arrival``.
 
-    The loop runs forever; callers cancel the task to stop it.
+    Use this when customers should arrive on a recurring timer.
+    :param interval_seconds: seconds between arrivals, or a callable that
+        returns the current interval (re-evaluated every tick).
+    :param store: customer store to add new arrivals to.
+    :param on_arrival: async callback invoked after each arrival.
+    :param rng: optional RNG for deterministic template selection.
     """
     rng = rng or random.Random()
     while True:
-        await asyncio.sleep(interval_seconds)
+        delay = interval_seconds() if callable(interval_seconds) else interval_seconds
+        await asyncio.sleep(delay)
         template = pick_next_template(rng)
         customer = make_customer(template)
         store.add(customer)

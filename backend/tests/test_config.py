@@ -4,7 +4,7 @@ from apothecaria.config import Settings
 def test_default_settings():
     s = Settings()
     assert s.database_url == "sqlite:///./apothecaria.sqlite"
-    assert s.customer_arrival_seconds == 30
+    assert s.customer_arrival_seconds == 3
     assert s.use_agent_customers is False
     assert s.use_canned_agent is False
 

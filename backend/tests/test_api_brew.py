@@ -23,6 +23,17 @@ def test_brew_unknown_returns_no_match(client, db_engine):
     assert body["quality_score"] == 0.0
 
 
+def test_brew_fog_veil_returns_match(client, db_engine):
+    with db_engine.connect() as conn:
+        seed_database(conn)
+    response = client.post("/api/brew", json={"ingredient_slugs": ["moonpetal", "sage", "feather"]})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["matched_recipe_slug"] == "fog_veil"
+    assert body["matched_ailment_category"] == "confusion"
+    assert body["quality_score"] == 1.0
+
+
 def test_brew_empty_returns_400(client, db_engine):
     with db_engine.connect() as conn:
         seed_database(conn)

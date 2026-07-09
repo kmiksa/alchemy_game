@@ -18,6 +18,8 @@
 - `**/init`** asks the CLI to scan your repo and generate a starter instructions file for you. You then edit it.
 - **Why instructions beat re-typing rules** — in exercises 01 and 02 we typed the rules into each prompt ("read README.md, give me one paragraph…"). Instructions move those rules out of the prompt and into a file the CLI always reads. Now "Add a docstring" produces the right docstring without spelling out the format every time.
 
+
+
 ## The docstring format we want
 
 We'll teach the CLI to write reST/Sphinx-style docstrings:
@@ -25,7 +27,7 @@ We'll teach the CLI to write reST/Sphinx-style docstrings:
 ```text
 Short one-line summary of what the function does.
 Use this when <when a caller should reach for this>.
-:param <name>: <description>
+:argument <name>: <description>
 :return: <description>
 ```
 
@@ -43,7 +45,7 @@ Run from the `alchemy_game` repo root. The point of this exercise is to **see th
   ```text
    > /exit
   ```
-2. **Create `.github/copilot-instructions.md`** by hand:
+2. **Create** `.github/copilot-instructions.md` by hand:
   ```bash
    mkdir -p .github
    touch .github/copilot-instructions.md
@@ -70,12 +72,12 @@ When writing or updating a Python function or method, give it a docstring in thi
    > /env
   ```
    `/env` lists the instructions, agents, skills, and MCP servers the session has loaded. You should see `.github/copilot-instructions.md` in the list.
-2. **Ask for a docstring on a *different* function — `pick_next_template` in the same file:**
+2. **Ask for a docstring on a *different* function —** `pick_next_template` **in the same file:**
   ```text
    > Add a docstring to pick_next_template in @backend/apothecaria/domain/customer_queue.py. Follow the project's docstring conventions.
   ```
    Note the prompt does **not** describe the format anywhere — the CLI gets it from `.github/copilot-instructions.md`.
-3. **Compare the two docstrings with `git diff`:**
+3. **Compare the two docstrings with** `git diff`**:**
   ```bash
    git diff backend/apothecaria/domain/customer_queue.py
   ```
@@ -93,12 +95,16 @@ When writing or updating a Python function or method, give it a docstring in thi
     ```
    Same repo, same prompt structure — **the only thing that changed between the two is the instructions file**. That's the payoff.
 
+
+
 ## Done when
 
 - The step-1 docstring (no instructions) and the step-4 docstring (with instructions) use different styles — you saw the before/after difference firsthand in `git diff`
 - `.github/copilot-instructions.md` exists (bootstrapped by `/init`, with a Docstrings section added)
 - `/env` shows the instructions file is loaded
 - The step-4 docstring on `pick_next_template` uses `:param:` and `:return:` (not "Args:"/"Returns:")
+
+
 
 ## Tip: starting from scratch with `/init`
 

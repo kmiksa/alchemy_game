@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     task = asyncio.create_task(
         arrival_loop(
-            interval_seconds=settings.customer_arrival_seconds,
+            interval_seconds=lambda: settings.customer_arrival_seconds,
             store=store,
             on_arrival=on_arrival,
         )
@@ -76,3 +76,15 @@ app.include_router(ws_api.router)
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.put("/api/settings/customer-arrival-seconds")
+def set_customer_arrival_seconds(seconds: int) -> dict[str, int]:
+    """Update the customer arrival interval at runtime (no restart needed).
+
+    Use this when tuning arrival speed during testing or demos.
+    :param seconds: new interval in seconds.
+    :return: the updated interval.
+    """
+    settings.customer_arrival_seconds = seconds
+    return {"customer_arrival_seconds": seconds}
