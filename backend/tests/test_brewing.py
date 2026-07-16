@@ -60,3 +60,11 @@ def test_fog_veil_exact_match(seeded_session):
     assert result.matched_recipe_name == "Fog Veil"
     assert result.matched_ailment_category == "confusion"
     assert result.quality_score == 1.0
+
+
+def test_snake_tail_exact_match(seeded_session):
+    result = combine_ingredients(["root", "feather", "eye-of-newt"], seeded_session)
+    assert result.matched_recipe_slug == "snake_tail"
+    assert result.matched_recipe_name == "Snake Tail Tonic"
+    assert result.matched_ailment_category == "energy"
+    assert result.quality_score == 1.0
