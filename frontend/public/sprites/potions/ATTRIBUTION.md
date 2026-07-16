@@ -10,3 +10,4 @@ Mapping:
 - `calming_tonic.png` ← `potions (4).png` (green with leaves)
 - `healing_balm.png` ← `potions (5).png` (pink heart pendant)
 - `fog_veil.png` ← `potions (2).png` (purple swirling flask)
+- `frost_cure.png` — placeholder, to be replaced with final art
