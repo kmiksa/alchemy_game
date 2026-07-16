@@ -1,13 +1,13 @@
 from apothecaria.db.seed import seed_database
 
 
-def test_recipes_returns_five(client, db_engine):
+def test_recipes_returns_seven(client, db_engine):
     with db_engine.connect() as conn:
         seed_database(conn)
     response = client.get("/api/recipes")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 6
+    assert len(data) == 7
     slugs = {r["slug"] for r in data}
     assert {
         "sleep_draught",
@@ -16,6 +16,7 @@ def test_recipes_returns_five(client, db_engine):
         "healing_balm",
         "fog_veil",
         "snake_tail",
+        "frost_cure",
     } == slugs
 
 

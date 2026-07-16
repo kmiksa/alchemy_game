@@ -1,0 +1,23 @@
+{
+  "skill_name": "new-mixture",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add a new potion called Ember Salve. It's for treating burns (ailment category: wound). Use moonpetal and root. Lore: 'A warm paste that cools the sting of flame and mends scorched skin.'",
+      "expected_output": "Recipe added to recipes.json with slug ember_salve, tests updated with new counts and a brew-match test, make seed and make test run successfully, PR opened.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Hey, can you create a brew for me? I'm thinking something called 'Midnight Whisper' — it should help with sleep. Ingredients are mushroom and sage. The lore is: 'Brewed under starless skies, it hushes the waking world.'",
+      "expected_output": "Recipe added with slug midnight_whisper, ailment_category sleep, correct ingredients, all tests updated and passing, PR opened.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Add a new recipe: slug=iron_tide, name=Iron Tide, category=fatigue, ingredients=[root, eye-of-newt, mushroom], lore='Tastes of rust and resolve. Steadies trembling hands.'",
+      "expected_output": "Recipe added with all fields correct, test counts bumped, brew test added, seeded and tested, PR opened.",
+      "files": []
+    }
+  ]
+}

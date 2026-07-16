@@ -4,5 +4,6 @@
   {"slug": "calming_tonic", "name": "Calming Tonic", "ailment_category": "anxiety", "lore": "Smells of evening grass. Steadies a fluttering heart.",  "ingredients": ["sage", "root"],              "sprite": "calming_tonic.png"},
   {"slug": "healing_balm",  "name": "Healing Balm",  "ailment_category": "wound",     "lore": "A thick green balm that knits skin and silences pain.",  "ingredients": ["moonpetal", "eye-of-newt"],  "sprite": "healing_balm.png"},
   {"slug": "fog_veil",     "name": "Fog Veil",     "ailment_category": "confusion", "lore": "A swirling silver draught that lifts the haze from tangled thoughts.", "ingredients": ["moonpetal", "sage", "feather"], "sprite": "fog_veil.png"},
-  {"slug": "snake_tail",  "name": "Snake Tail Tonic", "ailment_category": "energy", "lore": "A crackling amber brew that coils through the veins like liquid lightning.", "ingredients": ["root", "feather", "eye-of-newt"], "sprite": "snake_tail.png"}
+  {"slug": "snake_tail",  "name": "Snake Tail Tonic", "ailment_category": "energy", "lore": "A crackling amber brew that coils through the veins like liquid lightning.", "ingredients": ["root", "feather", "eye-of-newt"], "sprite": "snake_tail.png"},
+  {"slug": "frost_cure",  "name": "Frost Cure",       "ailment_category": "cold",   "lore": "A steaming amber brew that thaws frozen limbs and kindles warmth from within.", "ingredients": ["root", "sage", "eye-of-newt"], "sprite": "frost_cure.png"}
 ]

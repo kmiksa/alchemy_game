@@ -1,155 +1,161 @@
 ---
 name: new-mixture
-description: >-
-  Adds a new mixture (recipe, potion, or brew) to the Apothecaria game.
-  Use this skill whenever someone asks to add, create, or introduce a new
-  mixture, recipe, potion, brew, or draught — even if they don't use those
-  exact words. Handles everything from validating ingredients through
-  opening a PR.
+description: >
+  Add a new potion/mixture recipe to the Apothecaria game — handles content JSON,
+  test updates, database re-seeding, and opening a PR. Use this skill whenever the
+  user wants to add a new recipe, potion, mixture, brew, elixir, tonic, or draught
+  to the game, even if they don't say "recipe" explicitly. Also use it when someone
+  says things like "create a new potion", "I have an idea for a brew", or "add
+  fog_veil to the game".
 ---
 
-# New Mixture
+# New Mixture Playbook
 
-A mixture is a recipe entry in the apothecary's book. Once added, it
-appears in `/api/recipes` and becomes brewable via `/api/brew`. The
-game's seed-loader and brewing engine pick up new recipes automatically —
-no API, domain, or DB code changes are needed.
+Adding a recipe to Apothecaria is a content-only change — the generic brewing, API,
+and seed machinery already handles any recipe that appears in `recipes.json`. The work
+is: write the JSON entry, make sure the tests reflect the new count, add a brew-match
+test, re-seed, verify, and ship.
 
-## What you need from the user
+## Required inputs
 
-Collect all five of these before touching any files. If something is
-missing, ask — don't guess.
+Gather these from the user before starting. If any are missing, ask — don't guess.
 
-| Field              | Format                         | Example              |
-| ------------------ | ------------------------------ | -------------------- |
-| **slug**           | `snake_case`, unique           | `fog_veil`           |
-| **name**           | Display name                   | Fog Veil             |
-| **ailment_category** | Short lowercase tag          | `confusion`          |
-| **ingredients**    | List of existing ingredient slugs | `["moonpetal", "sage", "feather"]` |
-| **lore**           | One evocative sentence         | "A swirling silver draught…" |
+| Input              | Example                          | Notes |
+|--------------------|----------------------------------|-------|
+| `slug`             | `fog_veil`                       | snake_case, unique across recipes |
+| `name`             | `Fog Veil`                       | Display name |
+| `ailment_category` | `confusion`                      | Must be a known category or a new one the user intends to add |
+| `ingredients`      | `["moonpetal", "sage", "feather"]` | Each ingredient slug must already exist in `ingredients.json` |
+| `lore`             | `"A swirling silver draught…"`   | One-sentence flavour text |
 
-Reuse an existing `ailment_category` when it fits (`sleep`, `fatigue`,
-`anxiety`, `wound`, `confusion`, `sorrow`, …). Invent a new one only
-when nothing matches.
+A `sprite` field is also required in the JSON but defaults to `<slug>.png` — the
+image itself can be a placeholder.
 
-## Before you start
+## Step-by-step workflow
 
-1. **Working tree is clean.** Run `git status`. If there are uncommitted
-   changes, ask the user to commit or stash first — mixing unrelated
-   changes makes the PR messy.
-2. **`gh` is authenticated.** Run `gh auth status`. If it fails, finish
-   through the test step and then tell the user to run `gh auth login`.
+### 1. Validate ingredients
 
-## Workflow
+Read `backend/apothecaria/content/ingredients.json` and confirm every slug in the
+user's `ingredients` list exists. If any are missing, stop and tell the user — they
+need to add the ingredient first (that's a separate task).
 
-### 1 — Validate ingredients
+### 2. Check for duplicate slug
 
-Read `backend/apothecaria/content/ingredients.json` and confirm every
-requested slug exists. If any are missing, stop — adding ingredients is a
-separate task. Tell the user which ones are missing so they can add them
-first.
+Read `backend/apothecaria/content/recipes.json` and confirm the new slug doesn't
+collide with an existing recipe. Also confirm no existing recipe uses the exact same
+ingredient set (order-independent).
 
-### 2 — Confirm uniqueness
+### 3. Add the recipe to `recipes.json`
 
-Read `backend/apothecaria/content/recipes.json` and check two things:
+Append a new object to `backend/apothecaria/content/recipes.json`:
 
-- The new **slug** doesn't already exist.
-- The new **ingredient set** (order-independent) doesn't match any
-  existing recipe. The brewing engine matches by exact ingredient set, so
-  duplicates would collide and one recipe would shadow the other.
-
-### 3 — Add the recipe entry
-
-Append a new JSON object to `backend/apothecaria/content/recipes.json`.
-Match the shape and one-line-per-object formatting of existing entries.
-Include a `sprite` field set to `<slug>.png` — the actual image can be
-added later.
-
-Preserve the trailing newline at end of file.
-
-### 4 — Re-seed the database
-
-```bash
-make seed
+```json
+{
+  "slug": "<slug>",
+  "name": "<name>",
+  "ailment_category": "<ailment_category>",
+  "lore": "<lore>",
+  "ingredients": ["<ing1>", "<ing2>", ...],
+  "sprite": "<slug>.png"
+}
 ```
 
-This upserts the new recipe into SQLite. No migration is needed — the
-seed loader handles everything.
+Follow the existing formatting — one object per line, consistent key order
+(`slug`, `name`, `ailment_category`, `lore`, `ingredients`, `sprite`).
 
-### 5 — Update tests
+### 4. Add a placeholder sprite
 
-Three test files reference recipe counts or slug sets. Update them all:
+Create an empty (or placeholder) file at:
 
-**`backend/tests/test_api_recipes.py`** — The test that asserts the
-total recipe count and the set of slugs needs to include the new recipe.
-Add the new slug to the expected set and bump the count.
-
-**`backend/tests/test_seed.py`** — The idempotency test
-(`test_seed_is_idempotent_no_duplicates`) asserts the total number of
-recipes. Bump the expected count by one.
-
-**`backend/tests/test_brewing.py`** — Add a new test that brews the
-exact ingredient list and asserts `matched_recipe_slug`, `matched_recipe_name`,
-`matched_ailment_category`, and `quality_score == 1.0`. Follow the
-pattern of the existing exact-match tests.
-
-### 6 — Run the test suite
-
-```bash
-make test
+```
+frontend/public/sprites/potions/<slug>.png
 ```
 
-All tests must pass. If anything fails, fix it before continuing.
+If `frontend/public/sprites/potions/ATTRIBUTION.md` exists, add a line noting the
+placeholder (e.g., `- \`<slug>.png\` — placeholder, to be replaced with final art`).
 
-### 7 — Branch, commit, and open a PR
+### 5. Update test counts and slug sets
 
-```bash
-git checkout -b add-mixture-<slug>
-git add backend/apothecaria/content/recipes.json \
-       backend/tests/test_api_recipes.py \
-       backend/tests/test_seed.py \
-       backend/tests/test_brewing.py
-git commit -m "feat(content): add <name> mixture"
-git push -u origin add-mixture-<slug>
-gh pr create \
-  --title "Add <name> mixture" \
-  --body "## Summary
-Adds **<name>** (\`<slug>\`) for the \`<ailment_category>\` ailment.
+Three test files reference recipe counts and slug sets. After adding a recipe the
+numbers go up by one and the slug set gains the new entry.
 
-## Recipe
-- **Ingredients:** <comma-separated slugs>
-- **Lore:** <lore>
+#### `backend/tests/test_seed.py`
 
-## Verification
-- \`make seed\` upserts the new recipe.
-- \`make test\` passes with updated counts and a new brew test.
+In `test_seed_is_idempotent_no_duplicates`, update the expected recipe count:
 
-## Scope
-Content-only change. Does not touch API routes, brewing logic, DB
-models, or frontend — they pick up new recipes automatically."
+```python
+assert len(session.scalars(select(Recipe)).all()) == <OLD + 1>
 ```
 
-Substitute all `<placeholders>`. Print the PR URL that `gh` returns.
+#### `backend/tests/test_api_recipes.py`
 
-### 8 — Show the diff
+- Update the `len(data) ==` assertion to `<OLD + 1>`.
+- Add `"<slug>"` to the expected slug set.
+- If the test function name embeds the count (e.g., `test_recipes_returns_five`),
+  rename it to reflect the new count.
 
-Run `/diff` and give the user a short summary of what changed.
+### 6. Add a brew-match test
 
-## Files this skill touches
+In `backend/tests/test_brewing.py`, add a test that verifies the new recipe brews
+correctly:
 
-| File | Change |
-| ---- | ------ |
-| `backend/apothecaria/content/recipes.json` | New recipe object |
-| `backend/tests/test_api_recipes.py` | Updated count + slug set |
-| `backend/tests/test_seed.py` | Updated recipe count |
-| `backend/tests/test_brewing.py` | New exact-match brew test |
+```python
+def test_<slug>_exact_match(seeded_session):
+    result = combine_ingredients(<ingredients list>, seeded_session)
+    assert result.matched_recipe_slug == "<slug>"
+    assert result.matched_recipe_name == "<name>"
+    assert result.matched_ailment_category == "<ailment_category>"
+    assert result.quality_score == 1.0
+```
 
-## Boundaries
+### 7. Re-seed and run tests
 
-- **Don't** add new ingredients. If the recipe needs one that doesn't
-  exist, stop and tell the user.
-- **Don't** edit API routes, brewing logic, or DB models — the generic
-  machinery handles everything.
-- **Don't** add a database migration. The JSON seed is the source of
-  truth; `make seed` upserts.
-- **Don't** touch the frontend. The recipe list is fetched dynamically.
+```bash
+make seed    # upsert new recipe into SQLite
+make test    # all tests must pass
+```
+
+If tests fail, fix the issue and re-run. Common gotchas:
+- Off-by-one in recipe count assertions.
+- Ingredient slug typo (case-sensitive, hyphenated like `eye-of-newt`).
+- Duplicate ingredient set matching an existing recipe.
+
+### 8. Commit and open a PR
+
+Create a branch, commit, and open a PR:
+
+```bash
+git checkout -b add-<slug>-recipe
+git add -A
+git commit -m "feat(content): add <name> recipe
+
+- Add <slug> to recipes.json (<ailment_category>)
+- Update test counts and slug sets
+- Add brew-match test
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+git push -u origin add-<slug>-recipe
+gh pr create --title "Add <name> recipe" \
+  --body "Adds the **<name>** recipe (slug: \`<slug>\`, category: \`<ailment_category>\`).
+
+Ingredients: $(echo '<ingredients>' | tr ',' ', ')
+
+Lore: *<lore>*
+
+## Checklist
+- [x] Recipe added to \`recipes.json\`
+- [x] Placeholder sprite created
+- [x] Test counts updated
+- [x] Brew-match test added
+- [x] \`make seed\` ✓
+- [x] \`make test\` ✓"
+```
+
+## Notes
+
+- No API, domain, DB-schema, or seed-logic code changes are needed — the existing
+  generic machinery handles everything.
+- If no customer has the new `ailment_category` yet, mention that in the PR as a
+  natural follow-up task.
+- The frontend fetches recipes dynamically, so no frontend code changes are needed
+  beyond the sprite.
