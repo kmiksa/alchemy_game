@@ -26,11 +26,6 @@ __pycache__/
 node_modules/
 dist/
 .vite/
-docs/
-
-# Secrets
+.chainlit
 .env
-
-# Chainlit
-.chainlit/
-.files/
+.playwright-mcp
