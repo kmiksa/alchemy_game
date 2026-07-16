@@ -117,6 +117,7 @@ files at load time and produce friendly errors for typos.
 | `make type`         | `mypy`                             |
 | `make seed`         | Upsert JSON content into SQLite    |
 | `make db-reset`     | Delete the sqlite file and re-seed |
+| `make agent`        | Run the exercise 12 shopping agent (Chainlit chat UI) |
 
 
 ## Frontend

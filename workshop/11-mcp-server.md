@@ -85,4 +85,4 @@ Start from the `alchemy_game` repo root.
 - [Model Context Protocol — spec & SDKs](https://modelcontextprotocol.io/)
 - [Python MCP SDK — `FastMCP`](https://github.com/modelcontextprotocol/python-sdk)
 - [Exercise 09 — Plugins and the Playwright Plugin](./09-plugins-playwright.md) — *using* an MCP server
-- Exercise 12 — the pydantic-ai agent — the same capability, built as an agent
+- [Exercise 12 — Inside an Agent](./12-pydantic-ai-agent.md) — the same capability, built as an agent

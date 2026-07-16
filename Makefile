@@ -1,10 +1,10 @@
-.PHONY: dev backend-dev mcp frontend-dev install test lint format type seed db-reset build clean help
+.PHONY: dev backend-dev mcp agent frontend-dev install test lint format type seed db-reset build clean help
 
 PYTHON := uv run
 NPM := npm --prefix frontend
 
 help:
-	@echo "Targets: dev, backend-dev, mcp, frontend-dev, install, test, lint, format, type, seed, db-reset, build, clean"
+	@echo "Targets: dev, backend-dev, mcp, agent, frontend-dev, install, test, lint, format, type, seed, db-reset, build, clean"
 
 install:
 	$(PYTHON) python -c "print('python deps already managed by uv sync')"
@@ -22,6 +22,9 @@ backend-dev:
 
 mcp:
 	$(PYTHON) python -m apothecaria.mcp.server
+
+agent:
+	$(PYTHON) chainlit run backend/apothecaria/agents/chat.py -w --port 8001
 
 frontend-dev:
 	$(NPM) run dev

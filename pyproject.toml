@@ -13,6 +13,9 @@ dependencies = [
     "websockets>=13",
     "httpx>=0.28",
     "mcp>=1.2",
+    "pydantic-ai-slim[openai]>=1.99.0",
+    "chainlit>=2.11.1",
+    "python-dotenv>=1.2.2",
 ]
 
 [dependency-groups]
@@ -64,3 +67,12 @@ module = "tests.*"
 disallow_untyped_decorators = false
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
+
+[[tool.mypy.overrides]]
+module = ["chainlit.*", "dotenv.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "apothecaria.agents.chat"
+disallow_untyped_decorators = false
+disallow_untyped_calls = false
